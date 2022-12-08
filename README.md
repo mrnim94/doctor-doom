@@ -5,7 +5,6 @@
 Doctor Doom will destroy files or folder which are:
 - Live longer than certain time (default 30 days)
 - Have a size bigger than certain size (default 100MB)
-- Have a size smaller than certain size (default 1MB)
 - Have a certain extension (default .txt)
 - Have a certain name (default .txt)
 Doctor Doom will alway find file victims in recursive way. It will not destroy the folder itself.
