@@ -47,6 +47,7 @@ func (doom *DoctorDoom) GetDoomVictims() []DoomVictim {
 		int64(doom.sizeToB(doom.DoomOptions.Rule.Size)), doom.DoomOptions.Rule.Name)
 	uniqueFiles := utils.ListToUnique(allFiles)
 	doomVictims := doom.filesToDoomVictims(uniqueFiles)
+	fmt.Println("Doom find", len(doomVictims), "doom victims", doomVictims)
 	return doomVictims
 }
 
@@ -54,12 +55,15 @@ func (doom *DoctorDoom) GetDoomVictims() []DoomVictim {
 func (doom *DoctorDoom) DestroyDoomVictims(doomVictims []DoomVictim) {
 	fileUtils := utils.FileUtils{}
 	doomLogger := logger.DoomLogger{}
+	doomLogger.New(doom.DoomOptions.DoomExport)
+	doomLogger.Info("Doom found", strconv.Itoa(len(doomVictims))+" doom victims"+fmt.Sprint(doomVictims))
+
 	for _, doomVictim := range doomVictims {
 		err := fileUtils.RemoveFile(doomVictim.Path)
-		doomLogger.Info("Doom victim destroyed", doomVictim.Path, doomVictim.LastModifiedUnix, doomVictim.Size)
 		if err != nil {
-			fmt.Println(err)
+			doomLogger.ErrorVictim("Doom destroy victim failed", doomVictim.Path, doomVictim.LastModifiedUnix, doomVictim.Size)
 		}
+		doomLogger.InfoVictim("Doom destroy", doomVictim.Path, doomVictim.LastModifiedUnix, doomVictim.Size)
 	}
 }
 
@@ -145,4 +149,8 @@ func (doom *DoctorDoom) StartConquer() {
 		doom.Destroy()
 	})
 	cron.Start()
+
+	// Keep main routine alive
+	for {
+	}
 }
