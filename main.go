@@ -1,16 +1,14 @@
 package main
 
 import (
-	"github.com/mrnim94/doctor-doom/common/logger"
-	"github.com/mrnim94/doctor-doom/doom"
+	doomcli "github.com/mrnim94/doctor-doom/doom_cli"
 )
 
 func main() {
-	doctorDoom := doom.DoctorDoom{}
-	doctorDoom.New(doom.DoomOptions{})
-
-	logger.DoomLoggerInit(doctorDoom.DoomOptions.DoomExport)
-
-	// Start conquer the world
-	doctorDoom.StartConquer()
+	doomCli := doomcli.DoomCli{}
+	doomCli.New()
+	err := doomCli.Start()
+	if err != nil {
+		panic(err)
+	}
 }

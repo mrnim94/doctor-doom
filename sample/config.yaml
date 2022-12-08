@@ -5,4 +5,3 @@ rule:
   age: 30d
   size: 100M
   name: "*"
-  extension: .txt

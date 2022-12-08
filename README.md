@@ -102,8 +102,29 @@ services:
     restart: unless-stopped
 ```
 
+### Using config file
+
+```yaml
+# ./sample/config.yaml
+doom_path: /home/user
+circle: "* 14 * * *"
+doom_export: /home/user/doom_victims.log
+rule:
+  age: 30d
+  size: 10M
+  name: "/^victim/"
+```
+
+Usage
+```bash
+./doctor-doom --doom-config ./sample/config.yaml
+
+# Use this command as ENTRYPOINT or CMD
+```
+
 ## Dependencies
 - [Uber Zap](https://github.com/uber-go/zap)
 - [Lumberjack v2](https://pkg.go.dev/gopkg.in/natefinch/lumberjack.v2?utm_source=godoc)
 - [Cron v3](https://pkg.go.dev/github.com/robfig/cron/v3@v3.0.0)
 - [YAML v2](https://pkg.go.dev/gopkg.in/yaml.v2@v2.4.0)
+- [CLI v2](https://pkg.go.dev/github.com/urfave/cli/v2@v2.23.6)

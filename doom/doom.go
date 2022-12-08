@@ -139,6 +139,7 @@ func (doom *DoctorDoom) Destroy() {
 }
 
 func (doom *DoctorDoom) StartConquer() {
+	fmt.Println("Start conquer the world 🌋")
 	cron := cron.New()
 	cron.AddFunc(doom.DoomOptions.Circle, func() {
 		doom.Destroy()
