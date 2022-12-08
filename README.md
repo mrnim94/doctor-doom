@@ -71,6 +71,9 @@ rule:
 ```
 
 ## Override default value
+**WHAT OVERRIDE WHAT**
+
+`Default Config` << `Environment Config` << `File Config`
 
 ### Using environment variable
 
