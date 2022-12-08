@@ -1,0 +1,8 @@
+doom_path: /home/user
+circle: "0 0 * * *"
+doom_export: /var/log/doom
+rule:
+  age: 30d
+  size: 100M
+  name: "*"
+  extension: .txt
