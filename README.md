@@ -101,3 +101,9 @@ services:
       - /var/log:/var/log
     restart: unless-stopped
 ```
+
+## Dependencies
+- [Uber Zap](https://github.com/uber-go/zap)
+- [Lumberjack v2](https://pkg.go.dev/gopkg.in/natefinch/lumberjack.v2?utm_source=godoc)
+- [Cron v3](https://pkg.go.dev/github.com/robfig/cron/v3@v3.0.0)
+- [YAML v2](https://pkg.go.dev/gopkg.in/yaml.v2@v2.4.0)

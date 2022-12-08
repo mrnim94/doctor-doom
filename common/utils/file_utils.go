@@ -150,3 +150,13 @@ func (f *FileUtils) RemoveFile(filePath string) error {
 	}
 	return nil
 }
+
+// Return file size in bytes
+func (f *FileUtils) GetFileSize(filePath string) int64 {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		panic(err)
+	}
+
+	return fileInfo.Size()
+}

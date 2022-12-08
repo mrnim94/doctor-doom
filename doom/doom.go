@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mrnim94/doctor-doom/common/logger"
 	"github.com/mrnim94/doctor-doom/common/utils"
 	"github.com/robfig/cron/v3"
 )
@@ -32,6 +33,7 @@ func (doom *DoctorDoom) filesToDoomVictims(files []string) []DoomVictim {
 		doomVictims = append(doomVictims, DoomVictim{Path: file,
 			Name:             strings.Split(file, "/")[len(strings.Split(file, "/"))-1],
 			LastModifiedUnix: fileUtils.GetFileLastModifiedTime(file),
+			Size:             fileUtils.GetFileSize(file),
 		})
 	}
 	return doomVictims
@@ -51,8 +53,10 @@ func (doom *DoctorDoom) GetDoomVictims() []DoomVictim {
 // Destroy doom victims
 func (doom *DoctorDoom) DestroyDoomVictims(doomVictims []DoomVictim) {
 	fileUtils := utils.FileUtils{}
+	doomLogger := logger.DoomLogger{}
 	for _, doomVictim := range doomVictims {
 		err := fileUtils.RemoveFile(doomVictim.Path)
+		doomLogger.Info("Doom victim destroyed", doomVictim.Path, doomVictim.LastModifiedUnix, doomVictim.Size)
 		if err != nil {
 			fmt.Println(err)
 		}
