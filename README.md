@@ -12,11 +12,7 @@ Doctor Doom will only destroy folder if it is empty (of course, match the condit
 
 ## Environment
 - `doom_path`: The root folder path, where Dr.Doom will look for files to destroy
-- `circle`: The time interval (in time unit, integer ) between each Dr.Doom run. Default is 1d
-  - `d`: day
-  - `h`: hour
-  - `m`: minute
-  - cron tab definition ex: `0 0 * * *` (every day at midnight)
+- `circle`: The time interval (in time unit, integer ) between each Dr.Doom run. Cron tab definition ex: `0 0 * * *` (every day at midnight)
 - `doom_export`: The path where Dr.Doom will export the list of files it destroyed. Default is `./doom_victims.log`
 
 ## Rules (These rule will alway use the OR logic)
@@ -26,10 +22,10 @@ Doctor Doom will only destroy folder if it is empty (of course, match the condit
   - `m`: minute
 - `size`: The size (in size unit) a file must be bigger than to be destroyed. Default is 100MB
   - `B`: byte
-  - `KB`: kilobyte
-  - `MB`: megabyte
-  - `GB`: gigabyte
-  - `TB`: terabyte
+  - `K`: kilobyte
+  - `M`: megabyte
+  - `G`: gigabyte
+  - `T`: terabyte
 - `name`: The name of the file to be destroyed. Default is `.*`. Can use regex
 - `extension`: The extension of the file to be destroyed. Default is `.*`. Can use regex
 
@@ -44,9 +40,8 @@ circle: 0 0 * * *
 doom_export: /home/user/doom_victims.log
 rules:
   age: 30d
-  size: 100MB
-  name: .*
-  extension: .txt
+  size: 100M
+  name: "*"
 
 # Meaning: Dr.Doom will destroy all files in /home/user that are:
 # - Live longer than 30 days
@@ -65,9 +60,8 @@ circle: * 14 * * *
 doom_export: /home/user/doom_victims.log
 rules:
   age: 30d
-  size: 10MB
+  size: 10M
   name: "/^victim/"
-  extension: .txt
 
 # Meaning: Dr.Doom will destroy all files in /home/user that are:
 # - Live longer than 30 days
@@ -84,8 +78,8 @@ rules:
 #### Docker container
 ```bash
 docker run -d --name dr-doom -e DOOM_PATH="/home_user" -e CIRCLE="0 0 * * *" \
--e DOOM_EXPORT="/home_user/doom_victims.log" -e RULES_AGE="30d" -e RULES_SIZE="100MB" \
--e RULES_NAME=".*" -e RULES_EXTENSION=".txt" -v /home/user:/home_user \
+-e DOOM_EXPORT="/home_user/doom_victims.log" -e RULES_AGE="30d" -e RULES_SIZE="100M" \
+-e RULES_NAME=".*" -v /home/user:/home_user \
 --restart unless-stopped doctor-doom:latest doom conquer
 ```
 
@@ -101,9 +95,8 @@ services:
       - CIRCLE="0 0 * * *"
       - DOOM_EXPORT="/var/log/doctor-doom/doom_victims.log"
       - RULES_AGE="30d"
-      - RULES_SIZE="100MB"
-      - RULES_NAME=".*"
-      - RULES_EXTENSION=".txt"
+      - RULES_SIZE="100M"
+      - RULES_NAME="*"
     volumes:
       - /home/user:/home_user
       - /var/log:/var/log
