@@ -27,10 +27,9 @@ Doctor Doom will only destroy folder if it is empty (of course, match the condit
   - `G`: gigabyte
   - `T`: terabyte
 - `name`: The name of the file to be destroyed. Default is `.*`. Can use regex
-- `extension`: The extension of the file to be destroyed. Default is `.*`. Can use regex
 
 ### Rule priority
-- `Age` > `Size` > `Name` > `Extension`
+- `Age` > `Size` > `Name`
 
 ## Example 1
 ```yaml
@@ -38,7 +37,7 @@ Doctor Doom will only destroy folder if it is empty (of course, match the condit
 doom_path: /home/user
 circle: 0 0 * * *
 doom_export: /home/user/doom_victims.log
-rules:
+rule:
   age: 30d
   size: 100M
   name: "*"
@@ -58,7 +57,7 @@ rules:
 doom_path: /home/user
 circle: * 14 * * *
 doom_export: /home/user/doom_victims.log
-rules:
+rule:
   age: 30d
   size: 10M
   name: "/^victim/"
@@ -78,8 +77,8 @@ rules:
 #### Docker container
 ```bash
 docker run -d --name dr-doom -e DOOM_PATH="/home_user" -e CIRCLE="0 0 * * *" \
--e DOOM_EXPORT="/home_user/doom_victims.log" -e RULES_AGE="30d" -e RULES_SIZE="100M" \
--e RULES_NAME=".*" -v /home/user:/home_user \
+-e DOOM_EXPORT="/home_user/doom_victims.log" -e RULE_AGE="30d" -e RULE_SIZE="100M" \
+-e RULE_NAME=".*" -v /home/user:/home_user \
 --restart unless-stopped doctor-doom:latest doom conquer
 ```
 
@@ -94,9 +93,9 @@ services:
       - DOOM_PATH="/home_user"
       - CIRCLE="0 0 * * *"
       - DOOM_EXPORT="/var/log/doctor-doom/doom_victims.log"
-      - RULES_AGE="30d"
-      - RULES_SIZE="100M"
-      - RULES_NAME="*"
+      - RULE_AGE="30d"
+      - RULE_SIZE="100M"
+      - RULE_NAME="*"
     volumes:
       - /home/user:/home_user
       - /var/log:/var/log

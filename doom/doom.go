@@ -6,12 +6,14 @@ import (
 	"strings"
 
 	"github.com/mrnim94/doctor-doom/common/utils"
+	"github.com/robfig/cron/v3"
 )
 
 type DoctorDoom struct {
 	DoomOptions DoomOptions
 }
 
+// Crate new DoctorDoom with the merge of default options, options from environment variables and options from arguments
 func (doom *DoctorDoom) New(options DoomOptions) DoctorDoom {
 	doomOptionsDefault := DefaultDoomOptions()
 	doomOptionsFromEnv := DoomOptionsFromEnv()
@@ -22,6 +24,7 @@ func (doom *DoctorDoom) New(options DoomOptions) DoctorDoom {
 	return *doom
 }
 
+// Convert a list of files to a list of DoomVictim
 func (doom *DoctorDoom) filesToDoomVictims(files []string) []DoomVictim {
 	doomVictims := []DoomVictim{}
 	fileUtils := utils.FileUtils{}
@@ -34,6 +37,7 @@ func (doom *DoctorDoom) filesToDoomVictims(files []string) []DoomVictim {
 	return doomVictims
 }
 
+// Seek for doom victims in the [doom_path] a.k.a [DOOM_PATH] environment variable
 func (doom *DoctorDoom) GetDoomVictims() []DoomVictim {
 	fileUtils := utils.FileUtils{}
 	allFiles := fileUtils.ListAllFilesMatch(doom.DoomOptions.DoomPath,
@@ -44,6 +48,7 @@ func (doom *DoctorDoom) GetDoomVictims() []DoomVictim {
 	return doomVictims
 }
 
+// Destroy doom victims
 func (doom *DoctorDoom) DestroyDoomVictims(doomVictims []DoomVictim) {
 	fileUtils := utils.FileUtils{}
 	for _, doomVictim := range doomVictims {
@@ -54,6 +59,15 @@ func (doom *DoctorDoom) DestroyDoomVictims(doomVictims []DoomVictim) {
 	}
 }
 
+// Convert size to bytes
+//
+// Example:
+// 	1s -> 1000
+// 	1m -> 60000
+// 	1h -> 3600000
+// 	1d -> 86400000
+// 	1w -> 604800000
+// 	1M -> 2592000000
 func (doom *DoctorDoom) ageToMs(age string) int {
 	unit := age[len(age)-1:]
 	ageInt, err := strconv.Atoi(age[:len(age)-1])
@@ -82,6 +96,14 @@ func (doom *DoctorDoom) ageToMs(age string) int {
 	}
 }
 
+// Convert size to bytes
+//
+// Example:
+// 	1B -> 1
+// 	1K -> 1024
+// 	1M -> 1048576
+// 	1G -> 1073741824
+// 	1T -> 1099511627776
 func (doom *DoctorDoom) sizeToB(size string) int {
 	unit := size[len(size)-1:]
 	sizeInt, err := strconv.Atoi(size[:len(size)-1])
@@ -106,7 +128,16 @@ func (doom *DoctorDoom) sizeToB(size string) int {
 	}
 }
 
+// Main function to destroy doom victims
 func (doom *DoctorDoom) Destroy() {
 	doomVictims := doom.GetDoomVictims()
 	doom.DestroyDoomVictims(doomVictims)
+}
+
+func (doom *DoctorDoom) StartConquer() {
+	cron := cron.New()
+	cron.AddFunc(doom.DoomOptions.Circle, func() {
+		doom.Destroy()
+	})
+	cron.Start()
 }
