@@ -16,6 +16,7 @@ type FileUtils struct{}
 // If recursive is true, it will return all files in all level of subdirectories
 //
 // @param rootPath string
+//
 // @param recursive bool
 func (f *FileUtils) ListAllFiles(rootPath string, recursive bool) []string {
 	var files []string
@@ -48,6 +49,21 @@ func (f *FileUtils) ListAllFiles(rootPath string, recursive bool) []string {
 	return files
 }
 
+// Return all the files that match one or more conditions:
+//
+// - File last modified time is in Unix timestamp to now in Ms (e.g. 1 day = 86400000) is greater than ageMs
+//
+// - File size is greater than sizeB
+//
+// - File name matches the regex nameMatch
+//
+// @param rootPath string
+//
+// @param ageMs int64
+//
+// @param sizeB int64
+//
+// @param nameMatch string
 func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64, nameMatch string) []string {
 	var files []string
 
@@ -108,6 +124,7 @@ func (f *FileUtils) GetFileLastModifiedTime(filePath string) int64 {
 // Parse a YAML file into a struct
 //
 // @param filePath string
+//
 // @param target interface{}
 func (f *FileUtils) ParseYamlFile(filePath string, target interface{}) error {
 	file, err := os.Open(filePath)
