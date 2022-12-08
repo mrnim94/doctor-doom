@@ -76,10 +76,14 @@ rule:
 
 #### Docker container
 ```bash
-docker run -d --name dr-doom -e DOOM_PATH="/home_user" -e CIRCLE="0 0 * * *" \
--e DOOM_EXPORT="/home_user/doom_victims.log" -e RULE_AGE="30d" -e RULE_SIZE="100M" \
+docker run -d --name dr-doom -e DOOM_PATH="/home_user" \
+-e CIRCLE="0 0 * * *" \
+-e DOOM_EXPORT="/home_user/doom_victims.log" \
+-e RULE_AGE="30d" -e RULE_SIZE="100M" \
 -e RULE_NAME=".*" -v /home/user:/home_user \
---restart unless-stopped doctor-doom:latest doom conquer
+--restart unless-stopped \
+doctor-doom:latest \
+./doctor-doom
 ```
 
 #### Docker compose
