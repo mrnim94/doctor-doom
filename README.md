@@ -86,7 +86,7 @@ docker run -d --name dr-doom -e DOOM_PATH="/home_user" \
 -e RULE_NAME=".*" -v /home/user:/home_user \
 --restart unless-stopped \
 doctor-doom:latest \
-./doctor-doom --doom-config ./path/to/your/config/file.yaml
+./doctor-doom
 ```
 
 #### Docker compose
