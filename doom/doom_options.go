@@ -25,9 +25,9 @@ func DefaultDoomOptions() DoomOptions {
 		Circle:     "0 0 0 * * 0", // Every Sunday at 00:00:00
 		DoomExport: "/var/log",    // Export log path folder file will be named as doom-*.log
 		Rule: DoomDestroyRules{
-			Age:  "6d", // 6 days
-			Size: "1B", // 1 byte
-			Name: "*",  // All files
+			Age:  "30d",  // 6 days
+			Size: "100M", // 1 byte
+			Name: "*",    // All files
 		},
 	}
 }

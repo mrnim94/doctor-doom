@@ -5,14 +5,15 @@
 Doctor Doom will destroy files or folder which are:
 - Live longer than certain time (default 30 days)
 - Have a size bigger than certain size (default 100MB)
-- Have a certain extension (default .txt)
-- Have a certain name (default .txt)
+- Have a certain name (default "*", all files)
 Doctor Doom will alway find file victims in recursive way. It will not destroy the folder itself.
 Doctor Doom will only destroy folder if it is empty (of course, match the conditions).
 
+NOTE: With the default config, Doctor Doom will destroy all files.
+
 ## Environment
 - `doom_path`: The root folder path, where Dr.Doom will look for files to destroy
-- `circle`: The time interval (in time unit, integer ) between each Dr.Doom run. Cron tab definition ex: `0 0 * * *` (every day at midnight)
+- `circle`: The time interval (in time unit, integer ) between each Dr.Doom run. Cron tab definition ex: `0 0 * * 0` (every Sunday at midnight)
 - `doom_export`: The path where Dr.Doom will export the list of files it destroyed. Default is `./doom_victims.log`
 
 ## Rules (These rule will alway use the OR logic)
@@ -35,7 +36,7 @@ Doctor Doom will only destroy folder if it is empty (of course, match the condit
 ```yaml
 # Example 1
 doom_path: /home/user
-circle: 0 0 * * *
+circle: 0 0 * * 0
 doom_export: /home/user/doom_victims.log
 rule:
   age: 30d
@@ -47,7 +48,7 @@ rule:
 # - Have a size bigger than 100MB
 # - Have a name that matches regex .*
 # - Have a extension that matches regex .txt
-# Dr.Doom will run every day at midnight and export the list of files it destroyed to /home/user/doom_victims.log
+# Dr.Doom will run every Sunday at midnight and export the list of files it destroyed to /home/user/doom_victims.log
 # The destroy process will use the OR logic between the rules
 ```
 
@@ -55,7 +56,7 @@ rule:
 ```yaml
 # Example 2
 doom_path: /home/user
-circle: * 14 * * *
+circle: * 14 * * 0
 doom_export: /home/user/doom_victims.log
 rule:
   age: 30d
@@ -67,7 +68,7 @@ rule:
 # - Have a size bigger than 10MB
 # - Have a name that matches regex /^victim/
 # - Have a extension that matches regex .txt
-# Dr.Doom will run every day at 2pm and export the list of files it destroyed to /home/user/doom_victims.log
+# Dr.Doom will run every Sunday at 2pm and export the list of files it destroyed to /home/user/doom_victims.log
 ```
 
 ## Override default value
