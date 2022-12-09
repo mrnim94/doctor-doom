@@ -7,6 +7,7 @@ import (
 func main() {
 	doomCli := doomcli.DoomCli{}
 	doomCli.New()
+
 	err := doomCli.Start()
 	if err != nil {
 		panic(err)

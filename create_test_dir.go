@@ -14,7 +14,6 @@ package main
 // // It will have 10 levels of subdirectories.
 // //
 // // It each subdirectory will have 100 files with random names. and random content size between 10K and 100K.
-
 // func CreateDir() {
 // 	dirName := "tmp"
 // 	os.Mkdir(dirName, 0755)

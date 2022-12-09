@@ -29,6 +29,7 @@ func (doom *DoctorDoom) New(options DoomOptions) DoctorDoom {
 func (doom *DoctorDoom) filesToDoomVictims(files []string) []DoomVictim {
 	doomVictims := []DoomVictim{}
 	fileUtils := utils.FileUtils{}
+
 	for _, file := range files {
 		doomVictims = append(doomVictims, DoomVictim{Path: file,
 			Name:             strings.Split(file, "/")[len(strings.Split(file, "/"))-1],
@@ -36,17 +37,23 @@ func (doom *DoctorDoom) filesToDoomVictims(files []string) []DoomVictim {
 			Size:             fileUtils.GetFileSize(file),
 		})
 	}
+
 	return doomVictims
 }
 
 // Seek for doom victims in the [doom_path] a.k.a [DOOM_PATH] environment variable
 func (doom *DoctorDoom) GetDoomVictims() []DoomVictim {
 	fileUtils := utils.FileUtils{}
-	allFiles := fileUtils.ListAllFilesMatch(doom.DoomOptions.DoomPath,
+
+	allFiles := fileUtils.ListAllFilesMatch(
+		doom.DoomOptions.DoomPath,
 		int64(doom.ageToMs(doom.DoomOptions.Rule.Age)),
-		int64(doom.sizeToB(doom.DoomOptions.Rule.Size)), doom.DoomOptions.Rule.Name)
+		int64(doom.sizeToB(doom.DoomOptions.Rule.Size)),
+		doom.DoomOptions.Rule.Name,
+	)
 	uniqueFiles := utils.ListToUnique(allFiles)
 	doomVictims := doom.filesToDoomVictims(uniqueFiles)
+
 	fmt.Println("Doom find", len(doomVictims), "doom victims", doomVictims)
 	return doomVictims
 }
@@ -70,12 +77,13 @@ func (doom *DoctorDoom) DestroyDoomVictims(doomVictims []DoomVictim) {
 // Convert size to bytes
 //
 // Example:
-// 	1s -> 1000
-// 	1m -> 60000
-// 	1h -> 3600000
-// 	1d -> 86400000
-// 	1w -> 604800000
-// 	1M -> 2592000000
+//
+//	1s -> 1000
+//	1m -> 60000
+//	1h -> 3600000
+//	1d -> 86400000
+//	1w -> 604800000
+//	1M -> 2592000000
 func (doom *DoctorDoom) ageToMs(age string) int {
 	unit := age[len(age)-1:]
 	ageInt, err := strconv.Atoi(age[:len(age)-1])
@@ -107,11 +115,12 @@ func (doom *DoctorDoom) ageToMs(age string) int {
 // Convert size to bytes
 //
 // Example:
-// 	1B -> 1
-// 	1K -> 1024
-// 	1M -> 1048576
-// 	1G -> 1073741824
-// 	1T -> 1099511627776
+//
+//	1B -> 1
+//	1K -> 1024
+//	1M -> 1048576
+//	1G -> 1073741824
+//	1T -> 1099511627776
 func (doom *DoctorDoom) sizeToB(size string) int {
 	unit := size[len(size)-1:]
 	sizeInt, err := strconv.Atoi(size[:len(size)-1])
