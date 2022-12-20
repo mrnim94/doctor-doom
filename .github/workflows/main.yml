@@ -29,5 +29,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: 
-            - ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:latest
-            - ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:1.0.0
+          - ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:latest
+          - ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:1.0.0
