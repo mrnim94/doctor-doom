@@ -1,0 +1,10 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - "ci"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
