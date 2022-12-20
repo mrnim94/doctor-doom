@@ -28,4 +28,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:latest
+          tags: 
+            - ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:latest
+            - ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:1.0.0
