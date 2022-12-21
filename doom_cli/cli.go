@@ -23,37 +23,30 @@ func init() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "doom-path",
-				Value: "",
 				Usage: "The path where Doctor Doom will seek for doom victims. MUST BE ABSOLUTE PATH.",
 			},
 			&cli.StringFlag{
 				Name:  "doom-export",
-				Value: "/var/log",
 				Usage: "The path where Doctor Doom will export the log file.",
 			},
 			&cli.StringFlag{
 				Name:  "age",
-				Value: "0s",
 				Usage: "The age of the doom victims. Format: 1h, 1d, 1w, 1m, 1y",
 			},
 			&cli.StringFlag{
 				Name:  "size",
-				Value: "0B",
 				Usage: "The size of the doom victims. Format: 1B, 1K, 1M, 1G, 1T",
 			},
 			&cli.StringFlag{
 				Name:  "name",
-				Value: "*",
 				Usage: "The name of the doom victims. Format: (/s or *) for all files, regular expression for specific files",
 			},
 			&cli.StringFlag{
 				Name:  "doom-config",
-				Value: "",
 				Usage: "The path to the doom config file. Values in the config file will be overwritten by the cli flags",
 			},
 			&cli.StringFlag{
 				Name:  "circle",
-				Value: "0 0 0 * * 0",
 				Usage: "The circle of the doom. Cron expression (https://godoc.org/github.com/robfig/cron)",
 			},
 		},
