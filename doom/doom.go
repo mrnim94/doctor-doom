@@ -152,6 +152,8 @@ func (doom *DoctorDoom) Destroy() {
 	doom.DestroyDoomVictims(doomVictims)
 }
 
+var forever = make(chan bool)
+
 func (doom *DoctorDoom) StartConquer() {
 	fmt.Println("Start conquer the world 🌋")
 	cron := cron.New()
@@ -160,6 +162,6 @@ func (doom *DoctorDoom) StartConquer() {
 	})
 	cron.Start()
 
-	// Keep main routine alive
-	fmt.Scanln()
+	// Block forever
+	<-forever
 }
