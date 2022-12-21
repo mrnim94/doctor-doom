@@ -95,7 +95,7 @@ rule_and: true
 
 ```bash
 docker run -d --name dr-doom -e DOOM_PATH="/home_user" \
--e DOOM_CIRCLE="0 0 * * *" \
+-e CIRCLE="0 0 * * *" \
 -e DOOM_EXPORT="/home_user/doom_victims.log" \
 -e RULE_AGE="30d" -e RULE_SIZE="100M" \
 -e RULE_NAME=".*" -v /home/user:/home_user \
@@ -115,7 +115,7 @@ services:
     container_name: dr-doom
     environment:
       - DOOM_PATH="/home_user"
-      - DOOM_CIRCLE="0 0 * * *"
+      - CIRCLE="0 0 * * *"
       - DOOM_EXPORT="/var/log/doctor-doom/doom_victims.log"
       - RULE_AGE="30d"
       - RULE_SIZE="100M"

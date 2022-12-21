@@ -66,7 +66,7 @@ func OverrideDoomOptions(defaultOptions DoomOptions, overrideOptions DoomOptions
 
 func DoomOptionsFromEnv() DoomOptions {
 	doomPath := os.Getenv("DOOM_PATH")
-	circle := os.Getenv("DOOM_CIRCLE")
+	circle := os.Getenv("CIRCLE")
 	doomExport := os.Getenv("DOOM_EXPORT")
 	age := os.Getenv("RULE_AGE")
 	size := os.Getenv("RULE_SIZE")
