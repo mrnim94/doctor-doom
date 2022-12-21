@@ -59,7 +59,7 @@ func OverrideDoomOptions(defaultOptions DoomOptions, overrideOptions DoomOptions
 		defaultOptions.Rule.Name = overrideOptions.Rule.Name
 	}
 
-	defaultOptions.RuleAnd = overrideOptions.RuleAnd
+	defaultOptions.RuleAnd = defaultOptions.RuleAnd || overrideOptions.RuleAnd
 
 	return defaultOptions
 }
