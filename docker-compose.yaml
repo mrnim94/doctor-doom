@@ -10,4 +10,4 @@ services:
       - RULE_AGE=1d
       - RULE_SIZE=100M
       - RULE_NAME="*"
-      - CIRCLE="* * * * *"
+      - DOOM_CIRCLE="* * * * *"
