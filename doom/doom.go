@@ -161,6 +161,5 @@ func (doom *DoctorDoom) StartConquer() {
 	cron.Start()
 
 	// Keep main routine alive
-	for {
-	}
+	fmt.Scanln()
 }
