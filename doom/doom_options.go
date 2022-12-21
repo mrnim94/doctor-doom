@@ -17,6 +17,7 @@ type DoomOptions struct {
 	Circle     string           `yaml:"circle"`      // 1h, 1d, 1w, 1m, 1y, interval between each doom, or cron expression (https://godoc.org/github.com/robfig/cron). Default is every 7 days using cron expression (Sunday).
 	DoomExport string           `yaml:"doom_export"` // Export log path folder
 	Rule       DoomDestroyRules `yaml:"rule"`        // Rule to destroy files
+	RuleAnd    bool             `yaml:"rule_and"`    // If true, all rules must be satisfied to destroy a file. If false, only one rule must be satisfied to destroy a file. Default is false.
 }
 
 func DefaultDoomOptions() DoomOptions {
@@ -29,6 +30,7 @@ func DefaultDoomOptions() DoomOptions {
 			Size: "100M", // 100MB
 			Name: "*",    // All files
 		},
+		RuleAnd: false,
 	}
 }
 
@@ -57,6 +59,8 @@ func OverrideDoomOptions(defaultOptions DoomOptions, overrideOptions DoomOptions
 		defaultOptions.Rule.Name = overrideOptions.Rule.Name
 	}
 
+	defaultOptions.RuleAnd = overrideOptions.RuleAnd
+
 	return defaultOptions
 }
 
@@ -67,6 +71,7 @@ func DoomOptionsFromEnv() DoomOptions {
 	age := os.Getenv("RULE_AGE")
 	size := os.Getenv("RULE_SIZE")
 	name := os.Getenv("RULE_NAME")
+	ruleAnd := os.Getenv("RULE_AND") == "true"
 
 	return DoomOptions{
 		DoomPath:   doomPath,
@@ -77,6 +82,7 @@ func DoomOptionsFromEnv() DoomOptions {
 			Size: size,
 			Name: name,
 		},
+		RuleAnd: ruleAnd,
 	}
 }
 

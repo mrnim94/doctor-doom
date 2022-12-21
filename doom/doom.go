@@ -51,6 +51,7 @@ func (doom *DoctorDoom) GetDoomVictims() []DoomVictim {
 		int64(doom.ageToMs(doom.DoomOptions.Rule.Age)),
 		int64(doom.sizeToB(doom.DoomOptions.Rule.Size)),
 		doom.DoomOptions.Rule.Name,
+		doom.DoomOptions.RuleAnd,
 	)
 	uniqueFiles := utils.ListToUnique(allFiles)
 	doomVictims := doom.filesToDoomVictims(uniqueFiles)

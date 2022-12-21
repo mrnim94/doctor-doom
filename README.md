@@ -49,6 +49,7 @@ rule:
   age: 30d
   size: 100M
   name: "*"
+rule_and: false
 
 # Meaning: Dr.Doom will destroy all files in /home/user that are:
 # - Live longer than 30 days
@@ -57,6 +58,7 @@ rule:
 # - Have a extension that matches regex .txt
 # Dr.Doom will run every Sunday at midnight and export the list of files it destroyed to /home/user/doom_victims.log
 # The destroy process will use the OR logic between the rules
+# Using the OR logic between the rules
 ```
 
 ## Example 2
@@ -70,6 +72,7 @@ rule:
   age: 30d
   size: 10M
   name: "/^victim/"
+rule_and: true
 
 # Meaning: Dr.Doom will destroy all files in /home/user that are:
 # - Live longer than 30 days
@@ -77,6 +80,7 @@ rule:
 # - Have a name that matches regex /^victim/
 # - Have a extension that matches regex .txt
 # Dr.Doom will run every Sunday at 2pm and export the list of files it destroyed to /home/user/doom_victims.log
+# Using the AND logic between the rules
 ```
 
 ## Override default value
@@ -95,6 +99,7 @@ docker run -d --name dr-doom -e DOOM_PATH="/home_user" \
 -e DOOM_EXPORT="/home_user/doom_victims.log" \
 -e RULE_AGE="30d" -e RULE_SIZE="100M" \
 -e RULE_NAME=".*" -v /home/user:/home_user \
+-e RULE_AND="true" \
 --restart unless-stopped \
 mrnim94/doctor-doom:latest \
 ./doctor-doom
@@ -115,6 +120,7 @@ services:
       - RULE_AGE="30d"
       - RULE_SIZE="100M"
       - RULE_NAME="*"
+      - RULE_AND="true"
     volumes:
       - /home/user:/home_user
       - /var/log:/var/log
@@ -132,6 +138,8 @@ rule:
   age: 30d
   size: 10M
   name: "/^victim/"
+rule_and: true
+
 ```
 
 Usage

@@ -64,25 +64,35 @@ func (f *FileUtils) ListAllFiles(rootPath string, recursive bool) []string {
 // @param sizeB int64
 //
 // @param nameMatch string
-func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64, nameMatch string) []string {
+func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64, nameMatch string, useAndOperator bool) []string {
 	var files []string
 
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
-			if ageMs > 0 {
-				nowUnix := time.Now().Unix()
-				if nowUnix-info.ModTime().Unix() >= ageMs {
+			if useAndOperator {
+				fileLiveTimeMs := time.Now().Unix() - info.ModTime().Unix()
+				fileName := info.Name()
+				fileSize := info.Size()
+
+				if fileLiveTimeMs >= ageMs && fileSize >= sizeB && f.MatchName(fileName, nameMatch) {
 					files = append(files, path)
 				}
-			}
-			if sizeB >= 0 {
-				if info.Size() >= sizeB {
-					files = append(files, path)
+			} else {
+				if ageMs > 0 {
+					nowUnix := time.Now().Unix()
+					if nowUnix-info.ModTime().Unix() >= ageMs {
+						files = append(files, path)
+					}
 				}
-			}
-			if nameMatch != "" {
-				if f.MatchName(info.Name(), nameMatch) {
-					files = append(files, path)
+				if sizeB >= 0 {
+					if info.Size() >= sizeB {
+						files = append(files, path)
+					}
+				}
+				if nameMatch != "" {
+					if f.MatchName(info.Name(), nameMatch) {
+						files = append(files, path)
+					}
 				}
 			}
 		}
