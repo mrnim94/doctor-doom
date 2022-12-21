@@ -103,7 +103,6 @@ func doomCliAction(c *cli.Context) error {
 	// Start conquer the world
 	doctorDoom := doom.DoctorDoom{}
 	doctorDoom.New(doomOptions)
-	fmt.Println(doomOptions)
 	doctorDoom.StartConquer()
 	return nil
 }

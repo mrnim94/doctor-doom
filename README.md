@@ -1,8 +1,11 @@
 # Doctor Doom
+
 ![Dr.Doom](./images/drdoom-removebg-preview.png)
 
 ## Description
+
 Doctor Doom will destroy files or folder which are:
+
 - Live longer than certain time (default 30 days)
 - Have a size bigger than certain size (default 100MB)
 - Have a certain name (default "*", all files)
@@ -12,11 +15,13 @@ Doctor Doom will only destroy folder if it is empty (of course, match the condit
 NOTE: With the default config, Doctor Doom will destroy all files.
 
 ## Environment
+
 - `doom_path`: The root folder path, where Dr.Doom will look for files to destroy
 - `circle`: The time interval (in time unit, integer ) between each Dr.Doom run. Cron tab definition ex: `0 0 * * 0` (every Sunday at midnight)
 - `doom_export`: The path where Dr.Doom will export the list of files it destroyed. Default is `./doom_victims.log`
 
 ## Rules (These rule will alway use the OR logic)
+
 - `age`: The time (in time unit) a file must be older than to be destroyed. Default is 30d
   - `d`: day
   - `h`: hour
@@ -30,9 +35,11 @@ NOTE: With the default config, Doctor Doom will destroy all files.
 - `name`: The name of the file to be destroyed. Default is `.*`. Can use regex
 
 ### Rule priority
+
 - `Age` > `Size` > `Name`
 
 ## Example 1
+
 ```yaml
 # Example 1
 doom_path: /home/user
@@ -53,6 +60,7 @@ rule:
 ```
 
 ## Example 2
+
 ```yaml
 # Example 2
 doom_path: /home/user
@@ -72,6 +80,7 @@ rule:
 ```
 
 ## Override default value
+
 **WHAT OVERRIDE WHAT**
 
 `Default Config` << `Environment Config` << `File Config`
@@ -79,9 +88,10 @@ rule:
 ### Using environment variable
 
 #### Docker container
+
 ```bash
 docker run -d --name dr-doom -e DOOM_PATH="/home_user" \
--e CIRCLE="0 0 * * *" \
+-e DOOM_CIRCLE="0 0 * * *" \
 -e DOOM_EXPORT="/home_user/doom_victims.log" \
 -e RULE_AGE="30d" -e RULE_SIZE="100M" \
 -e RULE_NAME=".*" -v /home/user:/home_user \
@@ -91,6 +101,7 @@ mrnim94/doctor-doom:latest \
 ```
 
 #### Docker compose
+
 ```yaml
 version: "3.7"
 services:
@@ -99,7 +110,7 @@ services:
     container_name: dr-doom
     environment:
       - DOOM_PATH="/home_user"
-      - CIRCLE="0 0 * * *"
+      - DOOM_CIRCLE="0 0 * * *"
       - DOOM_EXPORT="/var/log/doctor-doom/doom_victims.log"
       - RULE_AGE="30d"
       - RULE_SIZE="100M"
@@ -124,6 +135,7 @@ rule:
 ```
 
 Usage
+
 ```bash
 ./doctor-doom --doom-config ./sample/config.yaml
 
@@ -131,6 +143,7 @@ Usage
 ```
 
 ## Dependencies
+
 - [Uber Zap](https://github.com/uber-go/zap)
 - [Lumberjack v2](https://pkg.go.dev/gopkg.in/natefinch/lumberjack.v2?utm_source=godoc)
 - [Cron v3](https://pkg.go.dev/github.com/robfig/cron/v3@v3.0.0)

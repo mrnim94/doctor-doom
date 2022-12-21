@@ -21,6 +21,7 @@ func (doom *DoctorDoom) New(options DoomOptions) DoctorDoom {
 	doomOptions := OverrideDoomOptions(doomOptionsDefault, doomOptionsFromEnv)
 	doomOptions = OverrideDoomOptions(doomOptions, options)
 
+	fmt.Println("Run with options: ", doomOptions)
 	doom.DoomOptions = doomOptions
 	return *doom
 }
