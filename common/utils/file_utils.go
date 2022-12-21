@@ -70,7 +70,7 @@ func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64,
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
 			if useAndOperator {
-				fileLiveTimeMs := time.Now().Unix() - info.ModTime().Unix()
+				fileLiveTimeMs := (time.Now().Unix() - info.ModTime().Unix()) * 1000
 				fileName := info.Name()
 				fileSize := info.Size()
 
@@ -80,7 +80,7 @@ func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64,
 			} else {
 				if ageMs > 0 {
 					nowUnix := time.Now().Unix()
-					if nowUnix-info.ModTime().Unix() >= ageMs {
+					if (nowUnix-info.ModTime().Unix())*1000 >= ageMs {
 						files = append(files, path)
 					}
 				}
@@ -128,7 +128,7 @@ func (f *FileUtils) GetFileLastModifiedTime(filePath string) int64 {
 		panic(err)
 	}
 
-	return fileInfo.ModTime().Unix()
+	return fileInfo.ModTime().Unix() * 1000
 }
 
 // Parse a YAML file into a struct

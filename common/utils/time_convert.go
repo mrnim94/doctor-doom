@@ -1,5 +1,7 @@
 package utils
 
+import "strconv"
+
 func MsToReadable(ms int64) string {
 	seconds := ms / 1000
 	minutes := seconds / 60
@@ -7,20 +9,20 @@ func MsToReadable(ms int64) string {
 	days := hours / 24
 
 	if days > 0 {
-		return string(rune(days)) + "d"
+		return strconv.Itoa(int(days)) + "d"
 	}
 
 	if hours > 0 {
-		return string(rune(hours)) + "h"
+		return strconv.Itoa(int(hours)) + "h"
 	}
 
 	if minutes > 0 {
-		return string(rune(minutes)) + "m"
+		return strconv.Itoa(int(minutes)) + "m"
 	}
 
 	if seconds > 0 {
-		return string(rune(seconds)) + "s"
+		return strconv.Itoa(int(seconds)) + "s"
 	}
 
-	return string(rune(ms)) + "ms"
+	return strconv.Itoa(int(ms)) + "ms"
 }

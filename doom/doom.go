@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mrnim94/doctor-doom/common/logger"
 	"github.com/mrnim94/doctor-doom/common/utils"
@@ -36,6 +37,7 @@ func (doom *DoctorDoom) filesToDoomVictims(files []string) []DoomVictim {
 			Name:             strings.Split(file, "/")[len(strings.Split(file, "/"))-1],
 			LastModifiedUnix: fileUtils.GetFileLastModifiedTime(file),
 			Size:             fileUtils.GetFileSize(file),
+			LiveIn:           utils.MsToReadable(time.Now().Unix()*1000 - fileUtils.GetFileLastModifiedTime(file)),
 		})
 	}
 

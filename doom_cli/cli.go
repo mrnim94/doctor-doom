@@ -46,7 +46,7 @@ func init() {
 				Usage: "The path to the doom config file. Values in the config file will be overwritten by the cli flags",
 			},
 			&cli.StringFlag{
-				Name:  "doom-circle",
+				Name:  "circle",
 				Usage: "The circle of the doom. Cron expression (https://godoc.org/github.com/robfig/cron)",
 			},
 			&cli.BoolFlag{
@@ -91,7 +91,7 @@ func doomCliAction(c *cli.Context) error {
 		name := c.String("name")
 
 		// Get circle
-		circle := c.String("doom-circle")
+		circle := c.String("circle")
 
 		// Rule and
 		ruleAnd := c.Bool("rule-and")
