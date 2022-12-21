@@ -86,7 +86,7 @@ docker run -d --name dr-doom -e DOOM_PATH="/home_user" \
 -e RULE_AGE="30d" -e RULE_SIZE="100M" \
 -e RULE_NAME=".*" -v /home/user:/home_user \
 --restart unless-stopped \
-doctor-doom:latest \
+mrnim94/doctor-doom:latest \
 ./doctor-doom
 ```
 
@@ -95,7 +95,7 @@ doctor-doom:latest \
 version: "3.7"
 services:
   dr-doom:
-    image: doctor-doom:latest
+    image: mrnim94/doctor-doom:latest
     container_name: dr-doom
     environment:
       - DOOM_PATH="/home_user"

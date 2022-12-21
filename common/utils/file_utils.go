@@ -6,14 +6,14 @@ import (
 	"regexp"
 	"time"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type FileUtils struct{}
 
 // Return all files in a directory
 //
-// If recursive is true, it will return all files in all level of subdirectories
+// # If recursive is true, it will return all files in all level of subdirectories
 //
 // @param rootPath string
 //

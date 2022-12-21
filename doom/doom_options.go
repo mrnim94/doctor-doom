@@ -7,16 +7,16 @@ import (
 )
 
 type DoomDestroyRules struct {
-	Age  string `json:"age"`  // 1h, 1d, 1w, 1m, 1y. Default is 6 days
-	Name string `json:"name"` // file name wildcard or regex (https://golang.org/pkg/path/filepath/#Match)
-	Size string `json:"size"` // 1B, 1KB, 1MB, 1GB, 1TB. Default is 1B (no limit)
+	Age  string `yaml:"age"`  // 1h, 1d, 1w, 1m, 1y. Default is 6 days
+	Name string `yaml:"name"` // file name wildcard or regex (https://golang.org/pkg/path/filepath/#Match)
+	Size string `yaml:"size"` // 1B, 1KB, 1MB, 1GB, 1TB. Default is 1B (no limit)
 }
 
 type DoomOptions struct {
-	DoomPath   string           `json:"doom_path"`   // Root path to doom
-	Circle     string           `json:"circle"`      // 1h, 1d, 1w, 1m, 1y, interval between each doom, or cron expression (https://godoc.org/github.com/robfig/cron). Default is every 7 days using cron expression (Sunday).
-	DoomExport string           `json:"doom_export"` // Export log path folder
-	Rule       DoomDestroyRules `json:"rule"`        // Rule to destroy files
+	DoomPath   string           `yaml:"doom_path"`   // Root path to doom
+	Circle     string           `yaml:"circle"`      // 1h, 1d, 1w, 1m, 1y, interval between each doom, or cron expression (https://godoc.org/github.com/robfig/cron). Default is every 7 days using cron expression (Sunday).
+	DoomExport string           `yaml:"doom_export"` // Export log path folder
+	Rule       DoomDestroyRules `yaml:"rule"`        // Rule to destroy files
 }
 
 func DefaultDoomOptions() DoomOptions {
