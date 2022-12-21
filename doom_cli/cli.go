@@ -78,9 +78,9 @@ func doomCliAction(c *cli.Context) error {
 	} else {
 		// Get doom path
 		doomPath := c.String("doom-path")
-		if doomPath == "" {
-			panic("Doom path is required")
-		}
+		// if doomPath == "" {
+		// 	panic("Doom path is required")
+		// }
 		// Get doom export
 		doomExport := c.String("doom-export")
 
