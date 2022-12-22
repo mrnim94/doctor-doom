@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-co-op/gocron"
 	"github.com/mrnim94/doctor-doom/common/logger"
 	"github.com/mrnim94/doctor-doom/common/utils"
-	"github.com/robfig/cron/v3"
 )
 
 type DoctorDoom struct {
@@ -155,16 +155,9 @@ func (doom *DoctorDoom) Destroy() {
 	doom.DestroyDoomVictims(doomVictims)
 }
 
-var forever = make(chan bool)
-
 func (doom *DoctorDoom) StartConquer() {
 	fmt.Println("Start conquer the world 🌋")
-	cron := cron.New()
-	cron.AddFunc(doom.DoomOptions.Circle, func() {
-		doom.Destroy()
-	})
-	cron.Start()
-
-	// Block forever
-	<-forever
+	cron := gocron.NewScheduler(time.UTC)
+	cron.Cron(doom.DoomOptions.Circle).Do(doom.Destroy)
+	cron.StartBlocking()
 }
