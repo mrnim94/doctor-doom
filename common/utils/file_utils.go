@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -68,6 +69,15 @@ func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64,
 	var files []string
 
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			// Ignore "no such file or directory" errors
+			if os.IsNotExist(err) {
+				fmt.Println("Ignore no such file or directory errors:", err)
+				return nil
+			}
+			fmt.Println("Error accessing file or directory:", err)
+			return err
+		}
 		if !info.IsDir() {
 			if useAndOperator {
 				fileLiveTimeMs := (time.Now().Unix() - info.ModTime().Unix()) * 1000
