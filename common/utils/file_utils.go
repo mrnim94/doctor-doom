@@ -123,10 +123,11 @@ func shouldProcessFile(path string, ageMs int64, sizeB int64, nameMatch string, 
 	if err != nil {
 		return false
 	}
+	isAllFileName := nameMatch == "" || nameMatch == "*"
 	if useAndOperator {
-		return info.ModTime().Unix()*1000 >= ageMs && info.Size() >= sizeB && regexp.MustCompile(nameMatch).MatchString(info.Name())
+		return info.ModTime().Unix()*1000 >= ageMs && info.Size() >= sizeB && (isAllFileName || regexp.MustCompile(nameMatch).MatchString(info.Name()))
 	} else {
-		return info.ModTime().Unix()*1000 >= ageMs || info.Size() >= sizeB || regexp.MustCompile(nameMatch).MatchString(info.Name())
+		return info.ModTime().Unix()*1000 >= ageMs || info.Size() >= sizeB || (isAllFileName || regexp.MustCompile(nameMatch).MatchString(info.Name()))
 	}
 }
 
