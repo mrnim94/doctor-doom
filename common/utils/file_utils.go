@@ -1,10 +1,13 @@
 package utils
 
 import (
-	"fmt"
+	"hash/fnv"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
+	"sync"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -65,55 +68,92 @@ func (f *FileUtils) ListAllFiles(rootPath string, recursive bool) []string {
 // @param sizeB int64
 //
 // @param nameMatch string
-func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64, nameMatch string, useAndOperator bool) []string {
+func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64, nameMatch string, useAndOperator bool, numWorkers int) []string {
 	var files []string
 
-	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			// Ignore "no such file or directory" errors
-			if os.IsNotExist(err) {
-				fmt.Println("Ignore no such file or directory errors:", err)
-				return nil
+	// Create a channel for each worker
+	fileChans := make([]chan string, numWorkers)
+	for i := range fileChans {
+		fileChans[i] = make(chan string, 100)
+	}
+
+	// Start workers
+	var wg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			for file := range fileChans[i] {
+				if shouldProcessFile(file, ageMs, sizeB, nameMatch, useAndOperator) {
+					files = append(files, file)
+				}
 			}
-			fmt.Println("Error accessing file or directory:", err)
+		}(i)
+	}
+
+	// Scan files using filepath.WalkDir
+	err := filepath.WalkDir(rootPath, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
 			return err
 		}
-		if !info.IsDir() {
-			if useAndOperator {
-				fileLiveTimeMs := (time.Now().Unix() - info.ModTime().Unix()) * 1000
-				fileName := info.Name()
-				fileSize := info.Size()
-
-				if fileLiveTimeMs >= ageMs && fileSize >= sizeB && f.MatchName(fileName, nameMatch) {
-					files = append(files, path)
-				}
-			} else {
-				if ageMs > 0 {
-					nowUnix := time.Now().Unix()
-					if (nowUnix-info.ModTime().Unix())*1000 >= ageMs {
-						files = append(files, path)
-					}
-				}
-				if sizeB >= 0 {
-					if info.Size() >= sizeB {
-						files = append(files, path)
-					}
-				}
-				if nameMatch != "" {
-					if f.MatchName(info.Name(), nameMatch) {
-						files = append(files, path)
-					}
-				}
-			}
+		if !entry.IsDir() {
+			// Send file to a worker
+			worker := getWorkerNum(path, numWorkers)
+			fileChans[worker] <- path
 		}
 		return nil
 	})
 
+	// Close channels to signal workers that no more files will be sent
+	for i := range fileChans {
+		close(fileChans[i])
+	}
+
+	// Wait for workers to finish
+	wg.Wait()
+
 	if err != nil {
-		panic(err)
+		return []string{}
 	}
 
 	return files
+
+}
+
+func shouldProcessFile(path string, ageMs int64, sizeB int64, nameMatch string, useAndOperator bool) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	if ageMs > 0 {
+		fileLiveTimeMs := time.Since(info.ModTime()).Milliseconds()
+		if fileLiveTimeMs < ageMs {
+			return false
+		}
+	}
+	if sizeB >= 0 {
+		if info.Size() < sizeB {
+			return false
+		}
+	}
+	if nameMatch != "" {
+		if useAndOperator {
+			if !strings.Contains(info.Name(), nameMatch) {
+				return false
+			}
+		} else {
+			if !strings.Contains(info.Name(), nameMatch) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func getWorkerNum(path string, numWorkers int) int {
+	h := fnv.New32a()
+	h.Write([]byte(path))
+	return int(h.Sum32()) % numWorkers
 }
 
 // Do the regex match
