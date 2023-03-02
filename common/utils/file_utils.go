@@ -6,9 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"sync"
-	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -125,29 +123,11 @@ func shouldProcessFile(path string, ageMs int64, sizeB int64, nameMatch string, 
 	if err != nil {
 		return false
 	}
-	if ageMs > 0 {
-		fileLiveTimeMs := time.Since(info.ModTime()).Milliseconds()
-		if fileLiveTimeMs < ageMs {
-			return false
-		}
+	if useAndOperator {
+		return info.ModTime().Unix()*1000 >= ageMs && info.Size() >= sizeB && regexp.MustCompile(nameMatch).MatchString(info.Name())
+	} else {
+		return info.ModTime().Unix()*1000 >= ageMs || info.Size() >= sizeB || regexp.MustCompile(nameMatch).MatchString(info.Name())
 	}
-	if sizeB >= 0 {
-		if info.Size() < sizeB {
-			return false
-		}
-	}
-	if nameMatch != "" {
-		if useAndOperator {
-			if !strings.Contains(info.Name(), nameMatch) {
-				return false
-			}
-		} else {
-			if !strings.Contains(info.Name(), nameMatch) {
-				return false
-			}
-		}
-	}
-	return true
 }
 
 func getWorkerNum(path string, numWorkers int) int {
