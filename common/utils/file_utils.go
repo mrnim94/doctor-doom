@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sync"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -124,10 +125,12 @@ func shouldProcessFile(path string, ageMs int64, sizeB int64, nameMatch string, 
 		return false
 	}
 	isAllFileName := nameMatch == "" || nameMatch == "*"
+	now := time.Now().Unix() * 1000
+	modTimeDiff := now - info.ModTime().Unix()*1000
 	if useAndOperator {
-		return info.ModTime().Unix()*1000 >= ageMs && info.Size() >= sizeB && (isAllFileName || regexp.MustCompile(nameMatch).MatchString(info.Name()))
+		return modTimeDiff >= ageMs && info.Size() >= sizeB && (isAllFileName || regexp.MustCompile(nameMatch).MatchString(info.Name()))
 	} else {
-		return info.ModTime().Unix()*1000 >= ageMs || info.Size() >= sizeB || (isAllFileName || regexp.MustCompile(nameMatch).MatchString(info.Name()))
+		return modTimeDiff >= ageMs || info.Size() >= sizeB || (isAllFileName || regexp.MustCompile(nameMatch).MatchString(info.Name()))
 	}
 }
 
