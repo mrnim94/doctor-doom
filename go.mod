@@ -3,7 +3,7 @@ module github.com/mrnim94/doctor-doom
 go 1.19
 
 require (
-	github.com/go-co-op/gocron v1.18.0
+	github.com/go-co-op/gocron v1.22.4
 	github.com/urfave/cli/v2 v2.25.1
 	go.uber.org/zap v1.24.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
@@ -17,6 +17,6 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
+	golang.org/x/sync v0.1.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
