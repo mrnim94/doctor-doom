@@ -3,7 +3,7 @@ module github.com/mrnim94/doctor-doom
 go 1.19
 
 require (
-	github.com/go-co-op/gocron v1.22.4
+	github.com/go-co-op/gocron v1.23.0
 	github.com/urfave/cli/v2 v2.25.1
 	go.uber.org/zap v1.24.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
