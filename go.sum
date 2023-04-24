@@ -9,6 +9,8 @@ github.com/go-co-op/gocron v1.18.0 h1:SxTyJ5xnSN4byCq7b10LmmszFdxQlSQJod8s3gbnXx
 github.com/go-co-op/gocron v1.18.0/go.mod h1:sD/a0Aadtw5CpflUJ/lpP9Vfdk979Wl1Sg33HPHg0FY=
 github.com/go-co-op/gocron v1.22.4 h1:i6bSRGATjzUD/yOybFsXhW4BVXsxuMMPAD9kNwJa52M=
 github.com/go-co-op/gocron v1.22.4/go.mod h1:UqVyvM90I1q/R1qGEX6cBORI6WArLuEgYlbncLMvzRM=
+github.com/go-co-op/gocron v1.23.0 h1:cD8PCSsa88HKJSC8XhSWATSEKdgfKjrlnDu8zX+Jce4=
+github.com/go-co-op/gocron v1.23.0/go.mod h1:gEQbrsoOV+HAp59D3LmYFgENQDeYp2QHsHT8N/Wzs/U=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
