@@ -2,6 +2,7 @@ package doom
 
 import (
 	"fmt"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -156,9 +157,28 @@ func (doom *DoctorDoom) Destroy() {
 	doom.DestroyDoomVictims(doomVictims)
 }
 
+func (doom *DoctorDoom) DestroyByCommand() {
+	commandBuilder := DoomCommandBuilder{}
+	command, err := commandBuilder.
+		WithFolderPath(doom.DoomOptions.DoomPath).
+		WithTargetLiveTime(int64(doom.ageToMs(doom.DoomOptions.Rule.Age))).
+		WithTargetSize(int64(doom.sizeToB(doom.DoomOptions.Rule.Size))).
+		BuildCommand()
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("RUN")
+	cmd := exec.Command("bash", "-c", command)
+	if err := cmd.Run(); err != nil {
+		fmt.Println(err.Error())
+	}
+}
+
 func (doom *DoctorDoom) StartConquer() {
 	fmt.Println("Start conquer the world 🌋")
 	cron := gocron.NewScheduler(time.UTC)
-	cron.Cron(doom.DoomOptions.Circle).Do(doom.Destroy)
+	cron.Cron(doom.DoomOptions.Circle).Do(doom.DestroyByCommand)
 	cron.StartBlocking()
 }
