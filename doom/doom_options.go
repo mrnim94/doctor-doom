@@ -22,11 +22,11 @@ type DoomOptions struct {
 
 func DefaultDoomOptions() DoomOptions {
 	return DoomOptions{
-		DoomPath:   "/tmp/doom",
+		DoomPath:   "tmp\\doom",
 		Circle:     "*/1 * * * *", // Every minute
 		DoomExport: "/var/log",    // Export log path folder file will be named as doom-*.log
 		Rule: DoomDestroyRules{
-			Age:  "30d",  // 30 days
+			Age:  "1h",   // 30 days
 			Size: "100M", // 100MB
 			Name: "*",    // All files
 		},
