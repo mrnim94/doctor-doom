@@ -23,7 +23,7 @@ type DoomOptions struct {
 func DefaultDoomOptions() DoomOptions {
 	return DoomOptions{
 		DoomPath:   "/tmp/doom",
-		Circle:     "0 0 0 * * 0", // Every Sunday at 00:00:00
+		Circle:     "*/1 * * * *", // Every minute
 		DoomExport: "/var/log",    // Export log path folder file will be named as doom-*.log
 		Rule: DoomDestroyRules{
 			Age:  "30d",  // 30 days
