@@ -1,11 +1,14 @@
 package utils
 
 import (
+	"bufio"
+	"fmt"
 	"hash/fnv"
-	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sync"
 	"time"
 
@@ -69,6 +72,7 @@ func (f *FileUtils) ListAllFiles(rootPath string, recursive bool) []string {
 // @param nameMatch string
 func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64, nameMatch string, useAndOperator bool, numWorkers int) []string {
 	var files []string
+	var mu sync.Mutex
 
 	// Create a channel for each worker
 	fileChans := make([]chan string, numWorkers)
@@ -84,29 +88,85 @@ func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64,
 			defer wg.Done()
 			for file := range fileChans[i] {
 				if shouldProcessFile(file, ageMs, sizeB, nameMatch, useAndOperator) {
+					mu.Lock()
 					files = append(files, file)
+					mu.Unlock()
 				}
 			}
 		}(i)
 	}
 
-	// Scan files using filepath.WalkDir
-	err := filepath.WalkDir(rootPath, func(path string, entry fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !entry.IsDir() {
-			// Send file to a worker
-			worker := getWorkerNum(path, numWorkers)
-			fileChans[worker] <- path
-		}
-		return nil
-	})
+	//// Scan files using filepath.WalkDir
+	//err := filepath.WalkDir(rootPath, func(path string, entry fs.DirEntry, err error) error {
+	//	if err != nil {
+	//		return err
+	//	}
+	//	if !entry.IsDir() {
+	//		// Send file to a worker
+	//		worker := getWorkerNum(path, numWorkers)
+	//		fileChans[worker] <- path
+	//	}
+	//	return nil
+	//})
+	//
+
+	// Execute the find command
+	var cmd *exec.Cmd
+	// Check the operating system and execute the appropriate command
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/c", "dir", "/b", "/s", rootPath)
+	} else {
+		cmd = exec.Command("find", rootPath, "-type", "f")
+	}
+
+	fmt.Printf("Running command: %v\n", cmd)
+
+	output, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Println("Error creating stdout pipe:", err)
+
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		fmt.Println("Error creating stderr pipe:", err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		fmt.Println("Error starting command:", err)
+	}
+
+	// Debug: Print error output
+	scannerErr := bufio.NewScanner(stderr)
+	for scannerErr.Scan() {
+		fmt.Println("STDERR:", scannerErr.Text())
+	}
+
+	fileCount := 0
+	// Read and process the output
+	scanner := bufio.NewScanner(output)
+	for scanner.Scan() {
+		line := scanner.Text()
+		// Process each file path (in this case, just print it)
+		worker := getWorkerNum(line, numWorkers)
+		fileChans[worker] <- line
+		fileCount++
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Error reading command output:", err)
+	}
 
 	// Close channels to signal workers that no more files will be sent
 	for i := range fileChans {
 		close(fileChans[i])
 	}
+	if err := cmd.Wait(); err != nil {
+		fmt.Println("Error waiting for command to finish:", err)
+	}
+
+	// Print the number of files
+	fmt.Println("Number of files:", fileCount)
 
 	// Wait for workers to finish
 	wg.Wait()
@@ -122,6 +182,7 @@ func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64,
 func shouldProcessFile(path string, ageMs int64, sizeB int64, nameMatch string, useAndOperator bool) bool {
 	info, err := os.Stat(path)
 	if err != nil {
+		fmt.Println("ERROR - shouldProcessFile ", err)
 		return false
 	}
 	isAllFileName := nameMatch == "" || nameMatch == "*"
