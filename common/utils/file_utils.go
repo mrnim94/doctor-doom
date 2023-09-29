@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"sync"
 	"time"
 
@@ -110,13 +111,19 @@ func (f *FileUtils) ListAllFilesMatch(rootPath string, ageMs int64, sizeB int64,
 	//})
 	//
 
+	// Convert milliseconds to minutes
+	minutes := int(ageMs / 1000 / 60)
+
+	// Convert minutes to string and prepend with "+"
+	minutesStr := "+" + strconv.Itoa(minutes)
+
 	// Execute the find command
 	var cmd *exec.Cmd
 	// Check the operating system and execute the appropriate command
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", "dir", "/b", "/s", rootPath)
 	} else {
-		cmd = exec.Command("find", rootPath, "-type", "f")
+		cmd = exec.Command("find", rootPath, "-type", "f", "-mmin", minutesStr)
 	}
 
 	fmt.Printf("Running command: %v\n", cmd)
