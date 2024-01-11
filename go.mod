@@ -3,7 +3,8 @@ module github.com/mrnim94/doctor-doom
 go 1.19
 
 require (
-	github.com/go-co-op/gocron v1.36.0
+	github.com/go-co-op/gocron v1.37.0
+	github.com/go-co-op/gocron/v2 v2.1.2
 	github.com/urfave/cli/v2 v2.27.1
 	go.uber.org/zap v1.26.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
@@ -15,7 +16,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-redsync/redsync/v4 v4.8.1 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/redis/go-redis/v9 v9.0.2 // indirect
