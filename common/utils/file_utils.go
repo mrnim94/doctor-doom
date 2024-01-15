@@ -256,21 +256,23 @@ func (f *FileUtils) ParseYamlFile(filePath string, target interface{}) error {
 
 // Remove file
 func (f *FileUtils) RemoveFile(filePath string) error {
+	var cmd *exec.Cmd
+
 	if runtime.GOOS == "windows" {
 		// Using PowerShell to remove the file
-		cmd := exec.Command("powershell", "-Command", fmt.Sprintf("Remove-Item '%s'", filePath))
-		if err := cmd.Run(); err != nil {
-			return err
-		}
-		fmt.Printf("Successfully deleted file using PowerShell: %s\n", filePath)
+		cmd = exec.Command("powershell", "-Command", fmt.Sprintf("Remove-Item '%s'", filePath))
 	} else {
 		// Using 'rm' command for Unix-like systems
-		cmd := exec.Command("rm", filePath)
-		if err := cmd.Run(); err != nil {
-			return err
-		}
-		fmt.Printf("Successfully deleted file using 'rm' command: %s\n", filePath)
+		cmd = exec.Command("rm", filePath)
 	}
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	successMsg := fmt.Sprintf("Successfully deleted file using %s: %s\n", cmd.Path, filePath)
+	fmt.Printf(successMsg)
+
 	return nil
 }
 
