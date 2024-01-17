@@ -5,39 +5,37 @@ import (
 	"strconv"
 )
 
-// Convert age to minutes
-//
-// Example:
-//
-//	1s -> 1000
-//	1m -> 60000
-//	1h -> 3600000
-//	1d -> 86400000
-//	1w -> 604800000
-//	1M -> 2592000000
-func AgeToMs(age string) int {
-	unit := age[len(age)-1:]
-	ageInt, err := strconv.Atoi(age[:len(age)-1])
+// Constants for time unit conversions
+const (
+	MinutesInHour = 60
+	HoursInDay    = 24
+	DaysInWeek    = 7
+	DaysInMonth   = 30 // Approximation
+	DaysInYear    = 365
+)
+
+// DurationToMinutes converts a duration string to minutes.
+// Supports minutes (m), hours (h), days (d), weeks (w), months (M), and years (y).
+func DurationToMinutes(duration string) int64 {
+	unit := duration[len(duration)-1:]
+	value, err := strconv.Atoi(duration[:len(duration)-1])
 	if err != nil {
 		fmt.Println(err)
 		return 0
 	}
-
 	switch unit {
-	//case "s":
-	//	return ageInt * 1000
 	case "m":
-		return ageInt
+		return int64(value)
 	case "h":
-		return ageInt * 60
+		return int64(value) * MinutesInHour
 	case "d":
-		return ageInt * 60 * 24
+		return int64(value) * MinutesInHour * HoursInDay
 	case "w":
-		return ageInt * 60 * 24 * 7
+		return int64(value) * MinutesInHour * HoursInDay * DaysInWeek
 	case "M":
-		return ageInt * 60 * 24 * 30
+		return int64(value) * MinutesInHour * HoursInDay * DaysInMonth
 	case "y":
-		return ageInt * 60 * 24 * 365
+		return int64(value) * MinutesInHour * HoursInDay * DaysInYear
 	default:
 		return 0
 	}

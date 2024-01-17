@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -28,7 +29,7 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 	deleteTask := func() {
 		rootPath := helper.GetEnvOrDefault("DOOM_PATH", "test_delete")
 
-		minutesStr := helper.AgeToMs(helper.GetEnvOrDefault("RULE_AGE", "1m"))
+		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1h"))
 
 		// Execute the find command
 		var cmd *exec.Cmd
@@ -36,7 +37,7 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 		if runtime.GOOS == "windows" {
 			cmd = exec.Command("cmd", "/c", "dir", "/b", "/s", rootPath)
 		} else {
-			cmd = exec.Command("find", rootPath, "-type", "f", "-mmin", string(minutesStr))
+			cmd = exec.Command("find", rootPath, "-type", "f", "-mmin", strconv.FormatInt(minutes, 10))
 		}
 		log.Debug("Running command: ", cmd)
 		output, err := cmd.StdoutPipe()
@@ -70,7 +71,7 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 
 			go func(filePath string) {
 				defer wg.Done()
-				isOld, err := checkOlFile(filePath, minutesStr)
+				isOld, err := checkOlFile(filePath, minutes)
 				if err != nil {
 					log.Error("Error checking file:", err)
 					return
@@ -104,7 +105,7 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 	s.StartAsync()
 }
 
-func checkOlFile(filePath string, thresholdTime int) (bool, error) {
+func checkOlFile(filePath string, thresholdTime int64) (bool, error) {
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
 		log.Error(err)
