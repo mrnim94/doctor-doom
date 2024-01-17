@@ -37,7 +37,7 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 		if runtime.GOOS == "windows" {
 			cmd = exec.Command("cmd", "/c", "dir", "/b", "/s", rootPath)
 		} else {
-			cmd = exec.Command("find", rootPath, "-type", "f", "-mmin", strconv.FormatInt(minutes, 10))
+			cmd = exec.Command("find", rootPath, "-type", "f", "-mmin", "+"+strconv.FormatInt(minutes, 10))
 		}
 		log.Debug("Running command: ", cmd)
 		output, err := cmd.StdoutPipe()
@@ -90,10 +90,10 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 
 		for result := range results {
 			if result.IsOld {
-				log.Debug("File %s is older than threshold\n", result.FilePath)
+				log.Debug("File ", result.FilePath, " is older than threshold")
 				go deleteFile(result.FilePath)
 			} else {
-				log.Debug("File %s is not older than threshold\n", result.FilePath)
+				log.Debug("File ", result.FilePath, " is not older than threshold")
 			}
 		}
 	}
@@ -134,6 +134,6 @@ func deleteFile(filePath string) {
 	if err != nil {
 		log.Error("Error deleting the file:", err)
 	}
-	log.Debug("Running command: %v\n", cmd)
+	log.Debug("Running command: ", cmd)
 	log.Debug("Command Output: ", strings.TrimSpace(string(output)))
 }
