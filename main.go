@@ -10,7 +10,6 @@ import (
 func init() {
 	os.Setenv("APP_NAME", "XXXX")
 	logger := log.InitLogger(false)
-	os.Setenv("LOG_LEVEL", "DEBUG")
 	logger.SetLevel(log.GetLogLevel("LOG_LEVEL"))
 	os.Setenv("TZ", "Asia/Ho_Chi_Minh")
 }
@@ -21,5 +20,5 @@ func main() {
 
 	e := echo.New()
 	deleteFileHandler.HandlerDeleteFile()
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":1994"))
 }
