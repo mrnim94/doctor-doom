@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "master"
+      - "doctor-doom-v2"
     tags:
       - '*.*.*'
 

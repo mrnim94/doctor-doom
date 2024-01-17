@@ -1,7 +1,0 @@
-doom_path: ./tmp
-circle: "* * * * *"
-doom_export: ./log
-rule:
-  age: 30d
-  size: 100M
-  name: "*"

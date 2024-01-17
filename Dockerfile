@@ -17,4 +17,4 @@ RUN go mod download
 RUN GOOS=linux go build -o app
 ENTRYPOINT ["./app"]
 
-EXPOSE 6969
+EXPOSE 1994
