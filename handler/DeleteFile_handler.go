@@ -1,14 +1,13 @@
 package handler
 
 import (
-	"bufio"
 	"doctor_doom/helper"
 	"doctor_doom/log"
 	"github.com/go-co-op/gocron"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -29,44 +28,50 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 	deleteTask := func() {
 		rootPath := helper.GetEnvOrDefault("DOOM_PATH", "test_delete")
 
-		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1h"))
+		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1m"))
 
-		// Execute the find command
-		var cmd *exec.Cmd
-		// Check the operating system and execute the appropriate command
-		if runtime.GOOS == "windows" {
-			cmd = exec.Command("cmd", "/c", "dir", "/b", "/s", rootPath)
-		} else {
-			cmd = exec.Command("find", rootPath, "-type", "f", "-mmin", "+"+strconv.FormatInt(minutes, 10))
-		}
-		log.Debug("Running command: ", cmd)
-		output, err := cmd.StdoutPipe()
+		//// Execute the find command
+		//var cmd *exec.Cmd
+		//// Check the operating system and execute the appropriate command
+		//if runtime.GOOS == "windows" {
+		//	cmd = exec.Command("cmd", "/c", "dir", "/b", "/s", rootPath)
+		//} else {
+		//	cmd = exec.Command("find", rootPath, "-type", "f", "-mmin", "+"+strconv.FormatInt(minutes, 10))
+		//}
+		//log.Debug("Running command: ", cmd)
+		//output, err := cmd.StdoutPipe()
+		//if err != nil {
+		//	log.Error("Error creating stdout pipe:", err)
+		//}
+		//
+		//stderr, err := cmd.StderrPipe()
+		//if err != nil {
+		//	log.Error("Error creating stderr pipe:", err)
+		//}
+		//
+		//if err := cmd.Start(); err != nil {
+		//	log.Error("Error starting command:", err)
+		//}
+		//
+		//// Debug: Print error output
+		//scannerErr := bufio.NewScanner(stderr)
+		//for scannerErr.Scan() {
+		//	log.Error("STDERR:", scannerErr.Text())
+		//}
+
+		files, err := os.ReadDir(rootPath)
 		if err != nil {
-			log.Error("Error creating stdout pipe:", err)
-		}
-
-		stderr, err := cmd.StderrPipe()
-		if err != nil {
-			log.Error("Error creating stderr pipe:", err)
-		}
-
-		if err := cmd.Start(); err != nil {
-			log.Error("Error starting command:", err)
-		}
-
-		// Debug: Print error output
-		scannerErr := bufio.NewScanner(stderr)
-		for scannerErr.Scan() {
-			log.Error("STDERR:", scannerErr.Text())
+			log.Error(err)
 		}
 
 		results := make(chan FileResult)
 		var wg sync.WaitGroup
 
-		scanner := bufio.NewScanner(output)
+		log.Debug("Begin to Check Old File")
+		//scanner := bufio.NewScanner(output)
 		fileCount := 0
-		for scanner.Scan() {
-			line := scanner.Text()
+		for _, file := range files {
+
 			wg.Add(1)
 
 			go func(filePath string) {
@@ -77,7 +82,7 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 					return
 				}
 				results <- FileResult{FilePath: filePath, IsOld: isOld}
-			}(line)
+			}(filepath.Join(rootPath, file.Name()))
 			fileCount++
 		}
 
