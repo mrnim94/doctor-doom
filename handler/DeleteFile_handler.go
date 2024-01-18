@@ -30,69 +30,22 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 
 		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1m"))
 
-		//// Execute the find command
-		//var cmd *exec.Cmd
-		//// Check the operating system and execute the appropriate command
-		//if runtime.GOOS == "windows" {
-		//	cmd = exec.Command("cmd", "/c", "dir", "/b", "/s", rootPath)
-		//} else {
-		//	cmd = exec.Command("find", rootPath, "-type", "f", "-mmin", "+"+strconv.FormatInt(minutes, 10))
-		//}
-		//log.Debug("Running command: ", cmd)
-		//output, err := cmd.StdoutPipe()
-		//if err != nil {
-		//	log.Error("Error creating stdout pipe:", err)
-		//}
-		//
-		//stderr, err := cmd.StderrPipe()
-		//if err != nil {
-		//	log.Error("Error creating stderr pipe:", err)
-		//}
-		//
-		//if err := cmd.Start(); err != nil {
-		//	log.Error("Error starting command:", err)
-		//}
-		//
-		//// Debug: Print error output
-		//scannerErr := bufio.NewScanner(stderr)
-		//for scannerErr.Scan() {
-		//	log.Error("STDERR:", scannerErr.Text())
-		//}
-
-		files, err := os.ReadDir(rootPath)
-		if err != nil {
-			log.Error(err)
-		}
-
 		results := make(chan FileResult)
 		var wg sync.WaitGroup
 
 		log.Debug("Begin to Check Old File")
-		//scanner := bufio.NewScanner(output)
-		fileCount := 0
-		for _, file := range files {
 
-			wg.Add(1)
+		// Start the recursive file listing and processing
+		wg.Add(1)
+		go listFiles(rootPath, minutes, &wg, results)
 
-			go func(filePath string) {
-				defer wg.Done()
-				isOld, err := checkOlFile(filePath, minutes)
-				if err != nil {
-					log.Error("Error checking file:", err)
-					return
-				}
-				results <- FileResult{FilePath: filePath, IsOld: isOld}
-			}(filepath.Join(rootPath, file.Name()))
-			fileCount++
-		}
-
-		log.Debug("The number of files that are found is: ", fileCount)
-
+		// Close the results channel once all processing is done
 		go func() {
 			wg.Wait()
 			close(results)
 		}()
 
+		// Handle the results
 		for result := range results {
 			if result.IsOld {
 				log.Debug("File ", result.FilePath, " is older than threshold")
@@ -108,6 +61,37 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 		log.Error(err)
 	}
 	s.StartAsync()
+}
+
+func listFiles(dir string, thresholdTime int64, wg *sync.WaitGroup, results chan<- FileResult) {
+	defer wg.Done()
+
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	for _, entry := range entries {
+		path := filepath.Join(dir, entry.Name())
+		if entry.IsDir() {
+			// It's a directory, recurse into it
+			wg.Add(1)
+			go listFiles(path, thresholdTime, wg, results)
+		} else {
+			// It's a file, process it concurrently
+			wg.Add(1)
+			go func(filePath string) {
+				defer wg.Done()
+				isOld, err := checkOlFile(filePath, thresholdTime)
+				if err != nil {
+					log.Error("Error checking file:", err)
+					return
+				}
+				results <- FileResult{FilePath: filePath, IsOld: isOld}
+			}(path)
+		}
+	}
 }
 
 func checkOlFile(filePath string, thresholdTime int64) (bool, error) {
