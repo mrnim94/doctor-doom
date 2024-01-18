@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "master"
-      - "doctor-doom-v2"
     tags:
       - '*.*.*'
 
@@ -35,3 +34,18 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:latest, ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:${{ env.RELEASE_VERSION }}
+      -
+        name: Login to quay.io
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_IO_USERNAME }}
+          password: ${{ secrets.QUAY_IO_ACCESS_TOKEN }}
+      -
+        name: Build and push to quay.io
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: quay.io/nimtechnology/doctor-doom:latest, quay.io/nimtechnology/doctor-doom:${{ env.RELEASE_VERSION }}
