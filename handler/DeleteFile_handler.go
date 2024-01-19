@@ -5,10 +5,7 @@ import (
 	"doctor_doom/log"
 	"github.com/go-co-op/gocron/v2"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
-	"strings"
 	"sync"
 	"time"
 )
@@ -52,7 +49,7 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 		for result := range results {
 			if result.IsOld {
 				log.Debug("File ", result.FilePath, " is older than threshold")
-				go deleteFile(result.FilePath)
+				deleteFile(result.FilePath)
 			} else {
 				log.Debug("File ", result.FilePath, " is not older than threshold")
 			}
@@ -109,22 +106,12 @@ func checkOlFile(filePath string, thresholdTime int64) (bool, error) {
 }
 
 func deleteFile(filePath string) {
-	var cmd *exec.Cmd
-
-	if runtime.GOOS == "windows" {
-		// On Windows, use the "cmd" shell to capture output
-		cmd = exec.Command("cmd", "/c", "del", filePath)
-	} else {
-		// On Linux and other Unix-based systems, use "sh" to capture output
-		cmd = exec.Command("sh", "-c", "rm "+filePath)
-	}
-
-	// Capture and print the output
-	output, err := cmd.CombinedOutput()
-
-	if err != nil {
-		log.Error("Error deleting the file:", err)
-	}
-	log.Debug("Running command: ", cmd)
-	log.Debug("Command Output: ", strings.TrimSpace(string(output)))
+	go func(path string) {
+		err := os.Remove(path)
+		if err != nil {
+			log.Error("Error deleting the file:", err)
+			return
+		}
+		log.Debug("File deleted successfully: ", path)
+	}(filePath)
 }
