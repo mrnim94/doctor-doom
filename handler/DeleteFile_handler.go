@@ -3,7 +3,7 @@ package handler
 import (
 	"doctor_doom/helper"
 	"doctor_doom/log"
-	"github.com/go-co-op/gocron"
+	"github.com/go-co-op/gocron/v2"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -22,21 +22,25 @@ type FileResult struct {
 }
 
 func (dl *DeleteFileHandler) HandlerDeleteFile() {
-	s := gocron.NewScheduler(time.UTC)
+	s, err := gocron.NewScheduler()
+	if err != nil {
+		log.Error(err)
+	}
 
 	deleteTask := func() {
 		rootPath := helper.GetEnvOrDefault("DOOM_PATH", "test_delete")
 
 		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1h"))
 
-		results := make(chan FileResult)
+		results := make(chan FileResult, 100) // Buffered channel
 		var wg sync.WaitGroup
+		sem := make(chan struct{}, 10) // Semaphore to limit concurrency
 
 		log.Debug("Begin to Check Old File")
 
 		// Start the recursive file listing and processing
 		wg.Add(1)
-		go listFiles(rootPath, minutes, &wg, results)
+		go listFiles(rootPath, minutes, &wg, results, sem)
 
 		// Close the results channel once all processing is done
 		go func() {
@@ -54,15 +58,14 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 			}
 		}
 	}
-
-	_, err := s.Cron(helper.GetEnvOrDefault("CIRCLE", "*/1 * * * *")).Do(deleteTask)
+	_, err = s.NewJob(gocron.CronJob("*/1 * * * *", false), gocron.NewTask(deleteTask))
 	if err != nil {
 		log.Error(err)
 	}
-	s.StartAsync()
+	s.Start()
 }
 
-func listFiles(dir string, thresholdTime int64, wg *sync.WaitGroup, results chan<- FileResult) {
+func listFiles(dir string, thresholdTime int64, wg *sync.WaitGroup, results chan<- FileResult, sem chan struct{}) {
 	defer wg.Done()
 
 	entries, err := os.ReadDir(dir)
@@ -74,14 +77,14 @@ func listFiles(dir string, thresholdTime int64, wg *sync.WaitGroup, results chan
 	for _, entry := range entries {
 		path := filepath.Join(dir, entry.Name())
 		if entry.IsDir() {
-			// It's a directory, recurse into it
 			wg.Add(1)
-			go listFiles(path, thresholdTime, wg, results)
+			go listFiles(path, thresholdTime, wg, results, sem)
 		} else {
-			// It's a file, process it concurrently
 			wg.Add(1)
 			go func(filePath string) {
 				defer wg.Done()
+				sem <- struct{}{}        // Acquire token
+				defer func() { <-sem }() // Release token
 				isOld, err := checkOlFile(filePath, thresholdTime)
 				if err != nil {
 					log.Error("Error checking file:", err)
