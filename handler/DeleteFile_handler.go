@@ -22,13 +22,12 @@ type FileResult struct {
 }
 
 func (dl *DeleteFileHandler) HandlerDeleteFile() {
-
 	s := gocron.NewScheduler(time.UTC)
 
 	deleteTask := func() {
 		rootPath := helper.GetEnvOrDefault("DOOM_PATH", "test_delete")
 
-		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1m"))
+		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1h"))
 
 		results := make(chan FileResult)
 		var wg sync.WaitGroup
