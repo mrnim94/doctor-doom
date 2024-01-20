@@ -5,7 +5,8 @@ import (
 	"doctor_doom/log"
 	"github.com/go-co-op/gocron/v2"
 	"os"
-	"sync"
+	"path/filepath"
+	"time"
 )
 
 type DeleteFileHandler struct {
@@ -26,28 +27,19 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 		rootPath := helper.GetEnvOrDefault("DOOM_PATH", "test_delete")
 
 		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1h"))
-
-		results := make(chan FileResult, 100) // Buffered channel
-		var wg sync.WaitGroup
-		sem := make(chan struct{}, 10) // Semaphore to limit concurrency
-
 		log.Debug("Begin to Check Old File")
 
 		// Start the recursive file listing and processing
-		wg.Add(1)
-		go listFiles(rootPath, minutes, &wg, results, sem)
+		var results []FileResult
+		results, err = listFiles(rootPath, minutes, results)
 
 		// Close the results channel once all processing is done
-		go func() {
-			wg.Wait()
-			close(results)
-		}()
 
 		// Handle the results
-		for result := range results {
+		for _, result := range results {
 			if result.IsOld {
 				log.Debug("File ", result.FilePath, " is older than threshold")
-				//deleteFile(result.FilePath)
+				deleteFile(result.FilePath)
 			} else {
 				log.Debug("File ", result.FilePath, " is not older than threshold")
 			}
@@ -60,49 +52,44 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 	s.Start()
 }
 
-func listFiles(dir string, thresholdTime int64, wg *sync.WaitGroup, results chan<- FileResult, sem chan struct{}) {
-	defer wg.Done()
+func listFiles(dir string, thresholdTime int64, results []FileResult) ([]FileResult, error) {
 
-	//entries, err := os.ReadDir(dir)
-	//if err != nil {
-	//	log.Error(err)
-	//	return
-	//}
-	//
-	//for _, entry := range entries {
-	//	path := filepath.Join(dir, entry.Name())
-	//	entry.Info()
-	//	if entry.IsDir() {
-	//		wg.Add(1)
-	//		go listFiles(path, thresholdTime, wg, results, sem)
-	//		log.Info("Find out a ", path, " folder")
-	//	} else {
-	//		wg.Add(1)
-	//		go func(filePath string, fileInfo os.DirEntry) {
-	//			defer wg.Done()
-	//			sem <- struct{}{}        // Acquire token
-	//			defer func() { <-sem }() // Release token
-	//
-	//			info, err := fileInfo.Info()
-	//			if err != nil {
-	//				log.Error("Error getting file info:", err)
-	//				return
-	//			}
-	//
-	//			// Calculate the threshold time
-	//			currentTime := time.Now()
-	//			threshold := currentTime.Add(-time.Duration(thresholdTime) * time.Minute)
-	//
-	//			if info.ModTime().Before(threshold) {
-	//				// If the file's modification time is before the threshold time, it's considered old
-	//				results <- FileResult{FilePath: filePath, IsOld: true}
-	//			} else {
-	//				// If the file's modification time is after the threshold time, it's considered new
-	//				results <- FileResult{FilePath: filePath, IsOld: false}
-	//			}
-	//		}(path, entry)
-	//	}
-	//}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	for _, entry := range entries {
+		path := filepath.Join(dir, entry.Name())
+		if entry.IsDir() {
+			// It's a directory, recurse into it
+			var err error
+			results, err = listFiles(path, thresholdTime, results)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			info, err := entry.Info()
+			if err != nil {
+				log.Error("Error getting file info:", err)
+				return nil, err
+			}
+
+			// Calculate the threshold time
+			currentTime := time.Now()
+			threshold := currentTime.Add(-time.Duration(thresholdTime) * time.Minute)
+
+			if info.ModTime().Before(threshold) {
+				// If the file's modification time is before the threshold time, it's considered old
+				results = append(results, FileResult{FilePath: path, IsOld: true})
+			} else {
+				// If the file's modification time is after the threshold time, it's considered new
+				results = append(results, FileResult{FilePath: path, IsOld: false})
+			}
+		}
+	}
+	return results, nil
 }
 
 func deleteFile(filePath string) {
