@@ -76,6 +76,7 @@ func listFiles(dir string, thresholdTime int64, wg *sync.WaitGroup, results chan
 		if entry.IsDir() {
 			wg.Add(1)
 			go listFiles(path, thresholdTime, wg, results, sem)
+			log.Info("Find out a ", path, " folder")
 		} else {
 			wg.Add(1)
 			go func(filePath string) {
@@ -102,7 +103,6 @@ func checkOlFile(filePath string, thresholdTime int64) (bool, error) {
 	currentTime := time.Now()
 	thresholdDuration := time.Duration(thresholdTime) * time.Minute
 	return modTime.Add(thresholdDuration).Before(currentTime), nil
-
 }
 
 func deleteFile(filePath string) {
