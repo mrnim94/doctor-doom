@@ -83,12 +83,12 @@ func listFiles(dir string, thresholdTime int64, wg *sync.WaitGroup, results chan
 				defer wg.Done()
 				sem <- struct{}{}        // Acquire token
 				defer func() { <-sem }() // Release token
-				isOld, err := checkOlFile(filePath, thresholdTime)
+				//isOld, err := checkOlFile(filePath, thresholdTime)
 				if err != nil {
 					log.Error("Error checking file:", err)
 					return
 				}
-				results <- FileResult{FilePath: filePath, IsOld: isOld}
+				results <- FileResult{FilePath: filePath, IsOld: true}
 			}(path)
 		}
 	}
