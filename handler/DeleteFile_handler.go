@@ -106,12 +106,22 @@ func checkOlFile(filePath string, thresholdTime int64) (bool, error) {
 }
 
 func deleteFile(filePath string) {
-	go func(path string) {
-		err := os.Remove(path)
-		if err != nil {
-			log.Error("Error deleting the file:", err)
-			return
+	// Check if the file exists
+	if _, err := os.Stat(filePath); err != nil {
+		if os.IsNotExist(err) {
+			log.Debug("File does not exist: ", filePath)
+		} else {
+			log.Error("Error checking file existence: ", err)
 		}
-		log.Debug("File deleted successfully: ", path)
-	}(filePath)
+		return
+	}
+
+	// Attempt to delete the file
+	err := os.Remove(filePath)
+	if err != nil {
+		log.Error("Error deleting the file: ", err)
+		return
+	}
+
+	log.Debug("File deleted successfully: ", filePath)
 }
