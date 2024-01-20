@@ -5,9 +5,7 @@ import (
 	"doctor_doom/log"
 	"github.com/go-co-op/gocron/v2"
 	"os"
-	"path/filepath"
 	"sync"
-	"time"
 )
 
 type DeleteFileHandler struct {
@@ -65,44 +63,46 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 func listFiles(dir string, thresholdTime int64, wg *sync.WaitGroup, results chan<- FileResult, sem chan struct{}) {
 	defer wg.Done()
 
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	for _, entry := range entries {
-		path := filepath.Join(dir, entry.Name())
-		if entry.IsDir() {
-			wg.Add(1)
-			go listFiles(path, thresholdTime, wg, results, sem)
-			log.Info("Find out a ", path, " folder")
-		} else {
-			wg.Add(1)
-			go func(filePath string) {
-				defer wg.Done()
-				sem <- struct{}{}        // Acquire token
-				defer func() { <-sem }() // Release token
-				//isOld, err := checkOlFile(filePath, thresholdTime)
-				if err != nil {
-					log.Error("Error checking file:", err)
-					return
-				}
-				results <- FileResult{FilePath: filePath, IsOld: true}
-			}(path)
-		}
-	}
-}
-
-func checkOlFile(filePath string, thresholdTime int64) (bool, error) {
-	fileInfo, err := os.Stat(filePath)
-	if err != nil {
-		log.Error(err)
-	}
-	modTime := fileInfo.ModTime()
-	currentTime := time.Now()
-	thresholdDuration := time.Duration(thresholdTime) * time.Minute
-	return modTime.Add(thresholdDuration).Before(currentTime), nil
+	//entries, err := os.ReadDir(dir)
+	//if err != nil {
+	//	log.Error(err)
+	//	return
+	//}
+	//
+	//for _, entry := range entries {
+	//	path := filepath.Join(dir, entry.Name())
+	//	entry.Info()
+	//	if entry.IsDir() {
+	//		wg.Add(1)
+	//		go listFiles(path, thresholdTime, wg, results, sem)
+	//		log.Info("Find out a ", path, " folder")
+	//	} else {
+	//		wg.Add(1)
+	//		go func(filePath string, fileInfo os.DirEntry) {
+	//			defer wg.Done()
+	//			sem <- struct{}{}        // Acquire token
+	//			defer func() { <-sem }() // Release token
+	//
+	//			info, err := fileInfo.Info()
+	//			if err != nil {
+	//				log.Error("Error getting file info:", err)
+	//				return
+	//			}
+	//
+	//			// Calculate the threshold time
+	//			currentTime := time.Now()
+	//			threshold := currentTime.Add(-time.Duration(thresholdTime) * time.Minute)
+	//
+	//			if info.ModTime().Before(threshold) {
+	//				// If the file's modification time is before the threshold time, it's considered old
+	//				results <- FileResult{FilePath: filePath, IsOld: true}
+	//			} else {
+	//				// If the file's modification time is after the threshold time, it's considered new
+	//				results <- FileResult{FilePath: filePath, IsOld: false}
+	//			}
+	//		}(path, entry)
+	//	}
+	//}
 }
 
 func deleteFile(filePath string) {
