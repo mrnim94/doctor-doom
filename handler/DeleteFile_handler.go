@@ -45,7 +45,7 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 			}
 		}
 	}
-	_, err = s.NewJob(gocron.CronJob("*/1 * * * *", false), gocron.NewTask(deleteTask))
+	_, err = s.NewJob(gocron.CronJob(helper.GetEnvOrDefault("CIRCLE", "*/1 * * * *"), false), gocron.NewTask(deleteTask))
 	if err != nil {
 		log.Error(err)
 	}

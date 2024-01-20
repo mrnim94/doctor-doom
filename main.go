@@ -11,9 +11,7 @@ import (
 
 func init() {
 	os.Setenv("APP_NAME", "doctor-doom")
-	logger := log.InitLogger(false)
-	//os.Setenv("LOG_LEVEL", "DEBUG")
-	logger.SetLevel(log.GetLogLevel("LOG_LEVEL"))
+	log.InitLogger(false)
 	os.Setenv("TZ", "Asia/Ho_Chi_Minh")
 }
 
