@@ -49,7 +49,7 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 		for result := range results {
 			if result.IsOld {
 				log.Debug("File ", result.FilePath, " is older than threshold")
-				deleteFile(result.FilePath)
+				//deleteFile(result.FilePath)
 			} else {
 				log.Debug("File ", result.FilePath, " is not older than threshold")
 			}
