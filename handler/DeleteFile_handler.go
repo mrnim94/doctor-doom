@@ -73,7 +73,7 @@ func listFiles(dir string, thresholdTime int64, results []FileResult) ([]FileRes
 			info, err := entry.Info()
 			if err != nil {
 				log.Error("Error getting file info:", err)
-				return nil, err
+				continue
 			}
 
 			// Calculate the threshold time
