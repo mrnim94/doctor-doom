@@ -72,7 +72,7 @@ func listFiles(dir string, thresholdTime int64, results []FileResult) ([]FileRes
 		} else {
 			info, err := entry.Info()
 			if err != nil {
-				log.Error("Error getting file info:", err)
+				log.Error("Error getting file info:", err, " ,then continuing to check next file")
 				continue
 			}
 
