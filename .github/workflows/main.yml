@@ -39,14 +39,14 @@ jobs:
       - name: Run Trivy vulnerability scanner (CRITICAL)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.DOCKER_HUB_USERNAME }}/jougan:${{ env.RELEASE_VERSION }}
+          image-ref: ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:${{ env.RELEASE_VERSION }}
           format: 'table'
           exit-code: '1'
           severity: 'CRITICAL'
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.DOCKER_HUB_USERNAME }}/jougan:${{ env.RELEASE_VERSION }}
+          image-ref: ${{ secrets.DOCKER_HUB_USERNAME }}/doctor-doom:${{ env.RELEASE_VERSION }}
           format: 'table'
           exit-code: '0'
           severity: 'HIGH'
