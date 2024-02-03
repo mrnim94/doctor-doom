@@ -6,6 +6,7 @@ import (
 	"github.com/go-co-op/gocron/v2"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -29,21 +30,24 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1h"))
 		log.Debug("Begin to Check Old File")
 
-		// Start the recursive file listing and processing
-		var results []FileResult
-		results, err = listFiles(rootPath, minutes, results)
+		resultsChan := make(chan string, 100) // Buffered channel for file paths to delete
+		doneChan := make(chan bool)
 
-		// Close the results channel once all processing is done
-
-		// Handle the results
-		for _, result := range results {
-			if result.IsOld {
-				log.Debug("File ", result.FilePath, " is older than threshold")
-				deleteFile(result.FilePath)
-			} else {
-				log.Debug("File ", result.FilePath, " is not older than threshold")
+		go func() {
+			for filePath := range resultsChan {
+				deleteFile(filePath)
 			}
-		}
+			doneChan <- true
+		}()
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go listFiles(&wg, rootPath, minutes, resultsChan)
+
+		wg.Wait()
+		close(resultsChan) // Close the results channel to signal the deletion goroutine to finish
+		<-doneChan         // Wait for the deletion goroutine to signal it's done
+		log.Debug("Completed file processing.")
 	}
 	_, err = s.NewJob(gocron.CronJob(helper.GetEnvOrDefault("CIRCLE", "*/1 * * * *"), false), gocron.NewTask(deleteTask))
 	if err != nil {
@@ -52,44 +56,33 @@ func (dl *DeleteFileHandler) HandlerDeleteFile() {
 	s.Start()
 }
 
-func listFiles(dir string, thresholdTime int64, results []FileResult) ([]FileResult, error) {
+func listFiles(wg *sync.WaitGroup, dir string, thresholdTime int64, resultsChan chan<- string) {
+	defer wg.Done()
 
 	entries, err := os.ReadDir(dir)
 	if err != nil {
-		log.Error(err)
-		return nil, err
+		log.Error("Error reading directory: ", err)
+		return
 	}
 
 	for _, entry := range entries {
 		path := filepath.Join(dir, entry.Name())
 		if entry.IsDir() {
-			// It's a directory, recurse into it
-			var err error
-			results, err = listFiles(path, thresholdTime, results)
-			if err != nil {
-				return nil, err
-			}
+			wg.Add(1)
+			go listFiles(wg, path, thresholdTime, resultsChan)
 		} else {
 			info, err := entry.Info()
 			if err != nil {
-				log.Error("Error getting file info:", err, " ,then continuing to check next file")
+				log.Error("Error getting file info: ", err)
 				continue
 			}
-
-			// Calculate the threshold time
 			currentTime := time.Now()
 			threshold := currentTime.Add(-time.Duration(thresholdTime) * time.Minute)
-
 			if info.ModTime().Before(threshold) {
-				// If the file's modification time is before the threshold time, it's considered old
-				results = append(results, FileResult{FilePath: path, IsOld: true})
-			} else {
-				// If the file's modification time is after the threshold time, it's considered new
-				results = append(results, FileResult{FilePath: path, IsOld: false})
+				resultsChan <- path
 			}
 		}
 	}
-	return results, nil
 }
 
 func deleteFile(filePath string) {
