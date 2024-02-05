@@ -3,12 +3,9 @@ package handler
 import (
 	"doctor_doom/helper"
 	"doctor_doom/log"
-	"github.com/go-co-op/gocron"
+	"github.com/go-co-op/gocron/v2"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
-	"strings"
 	"sync"
 	"time"
 )
@@ -22,107 +19,89 @@ type FileResult struct {
 }
 
 func (dl *DeleteFileHandler) HandlerDeleteFile() {
-
-	s := gocron.NewScheduler(time.UTC)
+	s, err := gocron.NewScheduler()
+	if err != nil {
+		log.Error(err)
+	}
 
 	deleteTask := func() {
 		rootPath := helper.GetEnvOrDefault("DOOM_PATH", "test_delete")
 
-		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1m"))
-
-		results := make(chan FileResult)
-		var wg sync.WaitGroup
-
+		minutes := helper.DurationToMinutes(helper.GetEnvOrDefault("RULE_AGE", "1h"))
 		log.Debug("Begin to Check Old File")
 
-		// Start the recursive file listing and processing
-		wg.Add(1)
-		go listFiles(rootPath, minutes, &wg, results)
+		resultsChan := make(chan string, 100) // Buffered channel for file paths to delete
+		doneChan := make(chan bool)
 
-		// Close the results channel once all processing is done
 		go func() {
-			wg.Wait()
-			close(results)
+			for filePath := range resultsChan {
+				deleteFile(filePath)
+			}
+			doneChan <- true
 		}()
 
-		// Handle the results
-		for result := range results {
-			if result.IsOld {
-				log.Debug("File ", result.FilePath, " is older than threshold")
-				go deleteFile(result.FilePath)
-			} else {
-				log.Debug("File ", result.FilePath, " is not older than threshold")
-			}
-		}
-	}
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go listFiles(&wg, rootPath, minutes, resultsChan)
 
-	_, err := s.Cron(helper.GetEnvOrDefault("CIRCLE", "*/1 * * * *")).Do(deleteTask)
+		wg.Wait()
+		close(resultsChan) // Close the results channel to signal the deletion goroutine to finish
+		<-doneChan         // Wait for the deletion goroutine to signal it's done
+		log.Debug("Completed file processing.")
+	}
+	_, err = s.NewJob(gocron.CronJob(helper.GetEnvOrDefault("CIRCLE", "*/1 * * * *"), false), gocron.NewTask(deleteTask))
 	if err != nil {
 		log.Error(err)
 	}
-	s.StartAsync()
+	s.Start()
 }
 
-func listFiles(dir string, thresholdTime int64, wg *sync.WaitGroup, results chan<- FileResult) {
+func listFiles(wg *sync.WaitGroup, dir string, thresholdTime int64, resultsChan chan<- string) {
 	defer wg.Done()
 
 	entries, err := os.ReadDir(dir)
 	if err != nil {
-		log.Error(err)
+		log.Error("Error reading directory: ", err)
 		return
 	}
 
 	for _, entry := range entries {
 		path := filepath.Join(dir, entry.Name())
 		if entry.IsDir() {
-			// It's a directory, recurse into it
 			wg.Add(1)
-			go listFiles(path, thresholdTime, wg, results)
+			go listFiles(wg, path, thresholdTime, resultsChan)
 		} else {
-			// It's a file, process it concurrently
-			wg.Add(1)
-			go func(filePath string) {
-				defer wg.Done()
-				isOld, err := checkOlFile(filePath, thresholdTime)
-				if err != nil {
-					log.Error("Error checking file:", err)
-					return
-				}
-				results <- FileResult{FilePath: filePath, IsOld: isOld}
-			}(path)
+			info, err := entry.Info()
+			if err != nil {
+				log.Error("Error getting file info: ", err)
+				continue
+			}
+			currentTime := time.Now()
+			threshold := currentTime.Add(-time.Duration(thresholdTime) * time.Minute)
+			if info.ModTime().Before(threshold) {
+				resultsChan <- path
+			}
 		}
 	}
 }
 
-func checkOlFile(filePath string, thresholdTime int64) (bool, error) {
-	fileInfo, err := os.Stat(filePath)
-	if err != nil {
-		log.Error(err)
-	}
-	modTime := fileInfo.ModTime()
-	currentTime := time.Now()
-	thresholdDuration := time.Duration(thresholdTime) * time.Minute
-	return modTime.Add(thresholdDuration).Before(currentTime), nil
-
-}
-
 func deleteFile(filePath string) {
-	var cmd *exec.Cmd
-
-	if runtime.GOOS == "windows" {
-		// On Windows, use the "cmd" shell to capture output
-		cmd = exec.Command("cmd", "/c", "del", filePath)
-	} else {
-		// On Linux and other Unix-based systems, use "sh" to capture output
-		cmd = exec.Command("sh", "-c", "rm "+filePath)
+	// Check if the file exists
+	if _, err := os.Stat(filePath); err != nil {
+		if os.IsNotExist(err) {
+			log.Debug("File does not exist: ", filePath)
+		} else {
+			log.Error("Error checking file existence: ", err)
+		}
+		return
 	}
 
-	// Capture and print the output
-	output, err := cmd.CombinedOutput()
-
+	// Attempt to delete the file
+	err := os.Remove(filePath)
 	if err != nil {
-		log.Error("Error deleting the file:", err)
+		log.Error("Error deleting the file: ", err)
+		return
 	}
-	log.Debug("Running command: ", cmd)
-	log.Debug("Command Output: ", strings.TrimSpace(string(output)))
+
+	log.Debug("File deleted successfully: ", filePath)
 }
