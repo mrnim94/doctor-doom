@@ -7,7 +7,7 @@ require (
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/labstack/gommon v0.4.2
 	github.com/mrnim94/file-rotatelogs v2.4.0+incompatible
-	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
+	github.com/rifflock/lfshook/v2 v2.4
 	github.com/sirupsen/logrus v1.9.3
 )
 
